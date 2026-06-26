@@ -116,7 +116,6 @@
         }
         .total-hits {
             text-align: center;
-            margin-bottom: 20px;
             font-size: 16px;
             color: #666;
         }
@@ -161,7 +160,14 @@
             <input type="text" id="search-input" placeholder="Enter your search query..." value="testing" onkeydown="if(event.key==='Enter') fetchProducts(1)">
             <button onclick="fetchProducts(1)">Search</button>
         </div>
-        <div id="total-hits" class="total-hits"></div>
+        <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;">
+            <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
+            <select id="sort-select" onchange="fetchProducts(1)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
+                <option value="">Relevance</option>
+                <option value="price_amount:asc">Price: Low to High</option>
+                <option value="price_amount:desc">Price: High to Low</option>
+            </select>
+        </div>
         <div id="loading" class="loading" style="display: none;">Loading...</div>
         <div id="error" class="error" style="display: none;"></div>
         <div class="grid" id="results-grid">
@@ -180,7 +186,11 @@
 
         function buildSearchUrl(page) {
             const query = lastQuery;
-            return `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&f%5B%5D=availability:1&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96${page > 1 ? `&page=${page}` : ''}`;
+            const sort = document.getElementById('sort-select').value;
+            let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&f%5B%5D=availability:1&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96`;
+            if (sort) url += `&sort=${sort}`;
+            if (page > 1) url += `&page=${page}`;
+            return url;
         }
 
         async function fetchProducts(page) {
