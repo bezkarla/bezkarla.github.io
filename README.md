@@ -1,3 +1,4 @@
 
 TODOs:
-- do not crop and show the full image in modal
+- rename to BezKarla
+- add subtitle like alternative frontend for OdKarla.cz product search
