@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Results</title>
+    <title>Luigi's Box Product Search</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,6 +18,29 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
+        }
+        .search-box {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            font-size: 16px;
+        }
+        .search-box button {
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .search-box button:hover {
+            background: #0056b3;
         }
         .grid {
             display: grid;
@@ -95,72 +118,88 @@
             font-size: 12px;
             margin-right: 5px;
         }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+        .error {
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+            color: #e63946;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Product Results</h1>
+        <h1>Luigi's Box Product Search</h1>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Enter your search query..." value="testing">
+            <button onclick="fetchProducts()">Search</button>
+        </div>
+        <div id="loading" class="loading" style="display: none;">Loading...</div>
+        <div id="error" class="error" style="display: none;"></div>
         <div class="grid" id="results-grid">
             <!-- Products will be inserted here by JavaScript -->
         </div>
     </div>
 
     <script>
-        const products = [
-            {
-                "url": "/vyhrivane-rukavice-pro-muze-a-zeny-dobijeci-vyhrivane-rukavice-s-dotykovou-obrazovkou-vodeodolne~p2045490",
-                "attributes": {
-                    "title": "Vyhřívané rukavice pro muže a ženy, dobíjecí vyhřívané rukavice s dotykovou obrazovkou, voděodolné",
-                    "price": "od 1 189 Kč",
-                    "price_old": "2 187 Kč",
-                    "image_link": "https://kobra.odkarla.cz/t1/200x200/filters:c(94250)/3e/81/2045490/2045490_0.jpg/~/vyhrivane-rukavice-pro-muze-a-zeny-dobijeci-vyhrivane-rukavice-s-dotykovou-obrazovkou-vodeodolne",
-                    "category": ["Sport", "Zimní sporty", "Vybavení pro zimní sporty", "Lyžařské rukavice"],
-                    "availability_rank_text": ["Poslední 2 kusy skladem"],
-                    "labels": ["First minute"],
-                    "description": "Velikost: M. Značka: AMZYXH. Barva: Černá. Materiál: Polyester. Doporučené použití: Venkovní aktivity v chladném počasí (např. lyžování, lov, kempování)."
-                }
-            },
-            {
-                "url": "/opportunities-global-pre-intermediate-students-book-ne-partnersky-prodej~p484658",
-                "attributes": {
-                    "title": "Opportunities Global Pre-Intermediate Students' Book NE",
-                    "price": "99 Kč",
-                    "image_link": "https://kobra.odkarla.cz/t1/200x200/6a/e4/484658/484658_0.jpg/~/opportunities-global-pre-intermediate-students-book-ne-partnersky-prodej",
-                    "category": ["Knihy"],
-                    "availability_rank_text": ["Poslední kus u partnera"],
-                    "description": "New Reading and Listening Texts motivate students to speak and think in English."
-                }
-            },
-            {
-                "url": "/succes-intermediate-studentsbook-partnersky-prodej~p926571",
-                "attributes": {
-                    "title": "Succes Intermediate - Studentsbook",
-                    "price": "49 Kč",
-                    "image_link": "https://kobra.odkarla.cz/t1/200x200/7f/6f/926571/926571_0.jpg/~/succes-intermediate-studentsbook-partnersky-prodej",
-                    "category": ["Knihy"],
-                    "availability_rank_text": ["Poslední kus u partnera"],
-                    "description": "Učebnice angličtiny pro studenty."
-                }
-            }
-        ];
+        async function fetchProducts() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) return;
 
-        function renderProducts() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const grid = document.getElementById('results-grid');
+
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            grid.innerHTML = '';
+
+            try {
+                const url = `https://live.luigisbox.tech/autocomplete/v2?tracker_id=224905-260203&type=item:5,category:5,query:5&q=${encodeURIComponent(query)}&hostname=www.odkarla.cz`;
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                renderProducts(data.hits.filter(hit => hit.type === 'item'));
+            } catch (err) {
+                error.textContent = `Error: ${err.message}`;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function renderProducts(hits) {
             const grid = document.getElementById('results-grid');
             grid.innerHTML = '';
 
-            products.forEach(product => {
+            if (hits.length === 0) {
+                grid.innerHTML = '<div class="error">No products found.</div>';
+                return;
+            }
+
+            hits.forEach(hit => {
                 const card = document.createElement('div');
                 card.className = 'card';
 
-                const imgUrl = product.attributes.image_link || 'https://via.placeholder.com/300x200?text=No+Image';
-                const title = product.attributes.title || 'No Title';
-                const price = product.attributes.price || '';
-                const oldPrice = product.attributes.price_old || '';
-                const category = product.attributes.category ? product.attributes.category.join(' > ') : '';
-                const availability = product.attributes.availability_rank_text ? product.attributes.availability_rank_text[0] : '';
-                const description = product.attributes.description || '';
-                const labels = product.attributes.labels || [];
-                const productUrl = `https://www.odkarla.cz${product.url}`;
+                const attrs = hit.attributes || {};
+                const imgUrl = attrs.image_link || 'https://via.placeholder.com/300x200?text=No+Image';
+                const title = attrs.title || 'No Title';
+                const price = attrs.price || '';
+                const oldPrice = attrs.price_old || '';
+                const category = attrs.category ? attrs.category.join(' > ') : '';
+                const availability = attrs.availability_rank_text ? attrs.availability_rank_text[0] : '';
+                const description = attrs.description || '';
+                const labels = attrs.labels || [];
+                const productUrl = `https://www.odkarla.cz${hit.url}`;
 
                 card.innerHTML = `
                     <a href="${productUrl}" target="_blank">
@@ -180,7 +219,8 @@
             });
         }
 
-        renderProducts();
+        // Fetch products on page load with default query
+        window.onload = fetchProducts;
     </script>
 </body>
 </html>
