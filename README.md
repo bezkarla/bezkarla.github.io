@@ -1,3 +1,5 @@
 
 TODOs:
-- show more images - the image links are on the product page (e.g. https://www.odkarla.cz/magneticke-pouzdro-mobesv-2-v-1-pro-iphone-14-plus-se-stojankem-kozene-pouzdro-kompatibilni-s~p1759834) but can the image links be taken from elsewhere without contacting odkarla?
+- make only clicking the title go to odkarla (and add a link above the amazon)
+- switch between the images by hovering the thumbnail (or clicking it if touchscreen)
+- clicking the large image opens a model with the product expanded to full width (same as the product card in the grid but larger)
