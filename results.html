@@ -352,6 +352,7 @@
 
                 const attrs = hit.attributes || {};
                 const imgUrl = attrs.image_link || 'https://via.placeholder.com/300x200?text=No+Image';
+                const imgUrlL = attrs.image_link_l || imgUrl;
                 const title = attrs.title || 'No Title';
                 const price = attrs.price || '';
                 const oldPrice = attrs.price_old || '';
@@ -382,7 +383,7 @@
                 grid.appendChild(card);
                 const strip = card.querySelector('.thumb-strip');
                 const main = card.querySelector('.main-img');
-                main.onclick = () => openModal({imgUrl, title, price, oldPrice, category, availability, description, labels, asin, productUrl});
+                main.onclick = () => openModal({imgUrl: imgUrlL, title, price, oldPrice, category, availability, description, labels, asin, productUrl});
                 const uscore = imgUrl.lastIndexOf('_');
                 const dot = imgUrl.lastIndexOf('.jpg');
                 const prefix = imgUrl.substring(0, uscore);
