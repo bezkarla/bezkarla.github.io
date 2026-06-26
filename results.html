@@ -64,10 +64,33 @@
             color: inherit;
             display: block;
         }
-        .card img {
+        .card .main-img {
             width: 100%;
             height: 200px;
             object-fit: cover;
+        }
+        .card .thumb-strip {
+            display: flex;
+            gap: 4px;
+            padding: 6px 8px;
+            overflow-x: auto;
+        }
+        .card .thumb-strip .thumb {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0.6;
+            border: 2px solid transparent;
+            transition: opacity 0.2s, border-color 0.2s;
+        }
+        .card .thumb-strip .thumb:hover {
+            opacity: 1;
+        }
+        .card .thumb-strip .thumb.selected {
+            opacity: 1;
+            border-color: #007BFF;
         }
         .card-content {
             padding: 15px;
@@ -265,7 +288,8 @@
 
                 card.innerHTML = `
                     <a href="${productUrl}" target="_blank">
-                        <img src="${imgUrl}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                        <img class="main-img" src="${imgUrl}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                        <div class="thumb-strip"></div>
                         <div class="card-content">
                             <div class="card-title">${title}</div>
                             ${price ? `<div class="card-price">${price}${oldPrice ? ` <span class="card-old-price">${oldPrice}</span>` : ''}</div>` : ''}
@@ -279,6 +303,26 @@
                 `;
 
                 grid.appendChild(card);
+                const strip = card.querySelector('.thumb-strip');
+                const main = card.querySelector('.main-img');
+                const uscore = imgUrl.lastIndexOf('_');
+                const dot = imgUrl.lastIndexOf('.jpg');
+                const prefix = imgUrl.substring(0, uscore);
+                const suffix = imgUrl.substring(dot + 4);
+                (function probe(n) {
+                    const src = `${prefix}_${n}.jpg${suffix}`;
+                    const img = new Image();
+                    img.onload = () => {
+                        const thumb = document.createElement('img');
+                        thumb.className = 'thumb' + (n === 0 ? ' selected' : '');
+                        thumb.src = src;
+                        thumb.onclick = () => { main.src = src; strip.querySelectorAll('.thumb').forEach(t => t.classList.remove('selected')); thumb.classList.add('selected'); };
+                        strip.appendChild(thumb);
+                        probe(n + 1);
+                    };
+                    img.onerror = () => {};
+                    img.src = src;
+                })(0);
             });
         }
 

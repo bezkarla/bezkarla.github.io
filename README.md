@@ -1,4 +1,3 @@
 
 TODOs:
-- show more images - is there enough info in the json?
-- support for sorting (e.g. https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&f%5B%5D=availability:1&q=iphone&sort=price_amount:asc&facets=price_amount,category,brand,labels,availability_source&size=96)
+- show more images - the image links are on the product page (e.g. https://www.odkarla.cz/magneticke-pouzdro-mobesv-2-v-1-pro-iphone-14-plus-se-stojankem-kozene-pouzdro-kompatibilni-s~p1759834) but can the image links be taken from elsewhere without contacting odkarla?
