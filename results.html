@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luigi's Box Autocomplete Results</title>
+    <title>Product Results</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,6 +54,12 @@
             font-weight: bold;
             margin: 8px 0;
         }
+        .card-old-price {
+            font-size: 14px;
+            color: #999;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
         .card-category {
             font-size: 14px;
             color: #666;
@@ -82,111 +88,77 @@
             font-size: 12px;
             margin-right: 5px;
         }
-        .category-card {
-            background: #e8f4f8;
-        }
-        .category-card .card-title {
-            color: #2980b9;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Autocomplete Results</h1>
+        <h1>Product Results</h1>
         <div class="grid" id="results-grid">
-            <!-- Results will be inserted here by JavaScript -->
+            <!-- Products will be inserted here by JavaScript -->
         </div>
     </div>
 
     <script>
-        const data = {
-  "exact_match_hits_count": 0,
-  "partial_match_hits_count": 5,
-  "partial_match_terms": [],
-  "hits": [
-    {
-      "url": "/vyhrivane-rukavice-pro-muze-a-zeny-dobijeci-vyhrivane-rukavice-s-dotykovou-obrazovkou-vodeodolne~p2045490",
-      "type": "item",
-      "attributes": {
-        "title": "Vyhřívané rukavice pro muže a ženy, dobíjecí vyhřívané rukavice s dotykovou obrazovkou, voděodolné",
-        "price": "od 1 189 Kč",
-        "price_old": "2 187 Kč",
-        "image_link": "https://kobra.odkarla.cz/t1/200x200/filters:c(94250)/3e/81/2045490/2045490_0.jpg/~/vyhrivane-rukavice-pro-muze-a-zeny-dobijeci-vyhrivane-rukavice-s-dotykovou-obrazovkou-vodeodolne",
-        "category": ["Sport", "Zimní sporty", "Vybavení pro zimní sporty", "Lyžařské rukavice"],
-        "availability_rank_text": ["Poslední 2 kusy skladem"],
-        "labels": ["First minute"],
-        "description": "Velikost: M. Značka: AMZYXH. Barva: Černá. Materiál: Polyester. Doporučené použití: Venkovní aktivity v chladném počasí (např. lyžování, lov, kempování)."
-      }
-    },
-    {
-      "url": "/opportunities-global-pre-intermediate-students-book-ne-partnersky-prodej~p484658",
-      "type": "item",
-      "attributes": {
-        "title": "Opportunities Global Pre-Intermediate Students' Book NE",
-        "price": "99 Kč",
-        "image_link": "https://kobra.odkarla.cz/t1/200x200/6a/e4/484658/484658_0.jpg/~/opportunities-global-pre-intermediate-students-book-ne-partnersky-prodej",
-        "category": ["Knihy"],
-        "availability_rank_text": ["Poslední kus u partnera"],
-        "book_author": ["Michael Harris"],
-        "description": "New Reading and Listening Texts motivate students to speak and think in English."
-      }
-    },
-    {
-      "url": "/succes-intermediate-studentsbook-partnersky-prodej~p926571",
-      "type": "item",
-      "attributes": {
-        "title": "Succes Intermediate - Studentsbook",
-        "price": "49 Kč",
-        "image_link": "https://kobra.odkarla.cz/t1/200x200/7f/6f/926571/926571_0.jpg/~/succes-intermediate-studentsbook-partnersky-prodej",
-        "category": ["Knihy"],
-        "availability_rank_text": ["Poslední kus u partnera"],
-        "book_author": ["Bob Hastings"],
-        "description": "Učebnice angličtiny pro studenty."
-      }
-    },
-    {
-      "url": "/lyzarske-rukavice~c5440",
-      "type": "category",
-      "attributes": {
-        "title": "Lyžařské rukavice",
-        "image_link": "https://www.odkarla.cz/images/category/5440.jpg",
-        "hierarchy": ["Sport", "Zimní sporty", "Vybavení pro zimní sporty"]
-      }
-    },
-    {
-      "url": "/bazar-knih-antikvariat~c1469",
-      "type": "category",
-      "attributes": {
-        "title": "Knihy",
-        "image_link": "https://www.odkarla.cz/images/category/1469.jpg",
-        "hierarchy": ["Knihy, zábava, média"]
-      }
-    }
-  ]
-};
+        const products = [
+            {
+                "url": "/vyhrivane-rukavice-pro-muze-a-zeny-dobijeci-vyhrivane-rukavice-s-dotykovou-obrazovkou-vodeodolne~p2045490",
+                "attributes": {
+                    "title": "Vyhřívané rukavice pro muže a ženy, dobíjecí vyhřívané rukavice s dotykovou obrazovkou, voděodolné",
+                    "price": "od 1 189 Kč",
+                    "price_old": "2 187 Kč",
+                    "image_link": "https://kobra.odkarla.cz/t1/200x200/filters:c(94250)/3e/81/2045490/2045490_0.jpg/~/vyhrivane-rukavice-pro-muze-a-zeny-dobijeci-vyhrivane-rukavice-s-dotykovou-obrazovkou-vodeodolne",
+                    "category": ["Sport", "Zimní sporty", "Vybavení pro zimní sporty", "Lyžařské rukavice"],
+                    "availability_rank_text": ["Poslední 2 kusy skladem"],
+                    "labels": ["First minute"],
+                    "description": "Velikost: M. Značka: AMZYXH. Barva: Černá. Materiál: Polyester. Doporučené použití: Venkovní aktivity v chladném počasí (např. lyžování, lov, kempování)."
+                }
+            },
+            {
+                "url": "/opportunities-global-pre-intermediate-students-book-ne-partnersky-prodej~p484658",
+                "attributes": {
+                    "title": "Opportunities Global Pre-Intermediate Students' Book NE",
+                    "price": "99 Kč",
+                    "image_link": "https://kobra.odkarla.cz/t1/200x200/6a/e4/484658/484658_0.jpg/~/opportunities-global-pre-intermediate-students-book-ne-partnersky-prodej",
+                    "category": ["Knihy"],
+                    "availability_rank_text": ["Poslední kus u partnera"],
+                    "description": "New Reading and Listening Texts motivate students to speak and think in English."
+                }
+            },
+            {
+                "url": "/succes-intermediate-studentsbook-partnersky-prodej~p926571",
+                "attributes": {
+                    "title": "Succes Intermediate - Studentsbook",
+                    "price": "49 Kč",
+                    "image_link": "https://kobra.odkarla.cz/t1/200x200/7f/6f/926571/926571_0.jpg/~/succes-intermediate-studentsbook-partnersky-prodej",
+                    "category": ["Knihy"],
+                    "availability_rank_text": ["Poslední kus u partnera"],
+                    "description": "Učebnice angličtiny pro studenty."
+                }
+            }
+        ];
 
-        function renderResults() {
+        function renderProducts() {
             const grid = document.getElementById('results-grid');
             grid.innerHTML = '';
 
-            data.hits.forEach(hit => {
+            products.forEach(product => {
                 const card = document.createElement('div');
-                card.className = `card ${hit.type === 'category' ? 'category-card' : ''}`;
+                card.className = 'card';
 
-                const imgUrl = hit.attributes.image_link || 'https://via.placeholder.com/300x200?text=No+Image';
-                const title = hit.attributes.title || 'No Title';
-                const price = hit.attributes.price || '';
-                const oldPrice = hit.attributes.price_old || '';
-                const category = hit.attributes.category ? hit.attributes.category.join(' > ') : '';
-                const availability = hit.attributes.availability_rank_text ? hit.attributes.availability_rank_text[0] : '';
-                const description = hit.attributes.description || '';
-                const labels = hit.attributes.labels || [];
+                const imgUrl = product.attributes.image_link || 'https://via.placeholder.com/300x200?text=No+Image';
+                const title = product.attributes.title || 'No Title';
+                const price = product.attributes.price || '';
+                const oldPrice = product.attributes.price_old || '';
+                const category = product.attributes.category ? product.attributes.category.join(' > ') : '';
+                const availability = product.attributes.availability_rank_text ? product.attributes.availability_rank_text[0] : '';
+                const description = product.attributes.description || '';
+                const labels = product.attributes.labels || [];
 
                 card.innerHTML = `
                     <img src="${imgUrl}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                     <div class="card-content">
                         <div class="card-title">${title}</div>
-                        ${price ? `<div class="card-price">${price}${oldPrice ? ` <s>${oldPrice}</s>` : ''}</div>` : ''}
+                        ${price ? `<div class="card-price">${price}${oldPrice ? ` <span class="card-old-price">${oldPrice}</span>` : ''}</div>` : ''}
                         ${category ? `<div class="card-category">${category}</div>` : ''}
                         ${availability ? `<div class="card-availability">${availability}</div>` : ''}
                         ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge">${label}</span>`).join('')}</div>` : ''}
@@ -198,7 +170,7 @@
             });
         }
 
-        renderResults();
+        renderProducts();
     </script>
 </body>
 </html>
