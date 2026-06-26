@@ -1,3 +1,3 @@
 
 TODOs:
-- footer: replace FOOT with foot emoji
+- better formatting of description? maybe show/hide on click (show more/less) or hover

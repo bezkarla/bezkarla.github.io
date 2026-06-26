@@ -104,10 +104,6 @@
             font-size: 14px;
             color: #555;
             margin-top: 8px;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
         }
         .badge {
             display: inline-block;
@@ -241,7 +237,7 @@
                 return;
             }
 
-            hits.forEach(hit => {
+            hits.forEach((hit, idx) => {
                 const card = document.createElement('div');
                 card.className = 'card';
 
