@@ -251,6 +251,7 @@
                 const availability = attrs.availability_rank_text ? attrs.availability_rank_text[0] : '';
                 const description = attrs.description || '';
                 const labels = attrs.labels || [];
+                const asin = attrs.asin ? attrs.asin[0] : null;
                 const productUrl = `https://www.odkarla.cz${hit.url}`;
 
                 card.innerHTML = `
@@ -263,6 +264,7 @@
                             ${availability ? `<div class="card-availability">${availability}</div>` : ''}
                             ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge">${label}</span>`).join('')}</div>` : ''}
                             ${description ? `<div class="card-description">${description}</div>` : ''}
+                            ${asin ? `<div style="margin-top:8px"><a href="https://www.amazon.de/dp/${asin}" target="_blank" style="color:#007BFF;font-size:14px;">View on Amazon</a></div>` : ''}
                         </div>
                     </a>
                 `;

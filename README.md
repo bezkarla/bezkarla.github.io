@@ -1,3 +1,3 @@
 
 TODOs:
-- pagination: also add previous page button
+- add a link to amazon based on asin from the json
