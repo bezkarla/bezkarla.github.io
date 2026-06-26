@@ -29,10 +29,17 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
         }
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
         .card img {
             width: 100%;
@@ -153,17 +160,20 @@
                 const availability = product.attributes.availability_rank_text ? product.attributes.availability_rank_text[0] : '';
                 const description = product.attributes.description || '';
                 const labels = product.attributes.labels || [];
+                const productUrl = `https://www.odkarla.cz${product.url}`;
 
                 card.innerHTML = `
-                    <img src="${imgUrl}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                    <div class="card-content">
-                        <div class="card-title">${title}</div>
-                        ${price ? `<div class="card-price">${price}${oldPrice ? ` <span class="card-old-price">${oldPrice}</span>` : ''}</div>` : ''}
-                        ${category ? `<div class="card-category">${category}</div>` : ''}
-                        ${availability ? `<div class="card-availability">${availability}</div>` : ''}
-                        ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge">${label}</span>`).join('')}</div>` : ''}
-                        ${description ? `<div class="card-description">${description}</div>` : ''}
-                    </div>
+                    <a href="${productUrl}" target="_blank">
+                        <img src="${imgUrl}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                        <div class="card-content">
+                            <div class="card-title">${title}</div>
+                            ${price ? `<div class="card-price">${price}${oldPrice ? ` <span class="card-old-price">${oldPrice}</span>` : ''}</div>` : ''}
+                            ${category ? `<div class="card-category">${category}</div>` : ''}
+                            ${availability ? `<div class="card-availability">${availability}</div>` : ''}
+                            ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge">${label}</span>`).join('')}</div>` : ''}
+                            ${description ? `<div class="card-description">${description}</div>` : ''}
+                        </div>
+                    </a>
                 `;
 
                 grid.appendChild(card);
