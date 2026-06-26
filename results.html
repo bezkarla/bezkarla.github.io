@@ -162,8 +162,8 @@
     <div class="container">
         <h1>Luigi's Box Product Search</h1>
         <div class="search-box">
-            <input type="text" id="search-input" placeholder="Enter your search query..." value="testing" onkeydown="if(event.key==='Enter') fetchProducts()">
-            <button onclick="fetchProducts()">Search</button>
+            <input type="text" id="search-input" placeholder="Enter your search query..." value="testing" onkeydown="if(event.key==='Enter') fetchProducts(1)">
+            <button onclick="fetchProducts(1)">Search</button>
         </div>
         <div id="total-hits" class="total-hits"></div>
         <div id="loading" class="loading" style="display: none;">Loading...</div>
@@ -175,12 +175,22 @@
     </div>
 
     <script>
-        let currentGuid = null;
-        let currentNextPage = null;
+        let currentPage = 1;
+        let totalHitsCount = 0;
+        let lastQuery = '';
 
-        async function fetchProducts(url) {
+        function buildSearchUrl(page) {
+            const query = lastQuery;
+            return `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&f%5B%5D=availability:1&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96${page > 1 ? `&page=${page}` : ''}`;
+        }
+
+        async function fetchProducts(page) {
             const query = document.getElementById('search-input').value.trim();
-            if (!query && !url) return;
+            if (page === undefined || page === 1) {
+                if (!query) return;
+                lastQuery = query;
+                page = 1;
+            }
 
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
@@ -191,14 +201,12 @@
             error.style.display = 'none';
 
             try {
-                if (!url) {
+                if (page === 1) {
                     grid.innerHTML = '';
                     totalHits.textContent = '';
-                    currentNextPage = null;
-                    url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f[]=type:item&f[]=availability:1&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96`;
                 }
 
-                const response = await fetch(url);
+                const response = await fetch(buildSearchUrl(page));
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -207,10 +215,10 @@
                 const data = await response.json();
                 const results = data.results || data;
                 const hits = results.hits || [];
-                currentGuid = data.guid;
-                currentNextPage = data.next_page;
+                currentPage = page;
+                totalHitsCount = results.total_hits || 0;
 
-                totalHits.textContent = results.total_hits ? `${results.total_hits} products found` : '';
+                totalHits.textContent = totalHitsCount ? `${totalHitsCount} products found` : '';
                 renderProducts(hits);
                 renderPagination();
             } catch (err) {
@@ -266,16 +274,26 @@
         function renderPagination() {
             const container = document.getElementById('pagination');
             container.innerHTML = '';
-            if (currentNextPage) {
-                const btn = document.createElement('button');
-                btn.textContent = 'Next Page';
-                btn.onclick = () => fetchProducts(currentNextPage);
-                container.appendChild(btn);
+            const totalPages = Math.ceil(totalHitsCount / 96);
+            if (totalPages <= 1) return;
+
+            if (currentPage > 1) {
+                const prev = document.createElement('button');
+                prev.textContent = 'Previous Page';
+                prev.onclick = () => fetchProducts(currentPage - 1);
+                container.appendChild(prev);
+            }
+
+            if (currentPage < totalPages) {
+                const next = document.createElement('button');
+                next.textContent = 'Next Page';
+                next.onclick = () => fetchProducts(currentPage + 1);
+                container.appendChild(next);
             }
         }
 
         // Fetch products on page load with default query
-        window.onload = () => fetchProducts();
+        window.onload = () => fetchProducts(1);
     </script>
 </body>
 </html>
