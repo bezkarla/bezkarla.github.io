@@ -1,3 +1,3 @@
 
 TODOs:
-- add a link to amazon based on asin from the json
+- add a funny footer mocking copyright, something like "this slop was proudly vibecoded in 2026"
