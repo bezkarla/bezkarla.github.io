@@ -1,4 +1,5 @@
+# BezKarla
+an alternative frontend for OdKarla.cz e-shop with no tracking and using luigi's box api for search and metadata, and odkarla.cz's backend for fetching the images
 
 TODOs:
-- rename to BezKarla
-- add subtitle like alternative frontend for OdKarla.cz product search
+- think of some more stupid features
