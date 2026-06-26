@@ -118,6 +118,32 @@
             font-size: 12px;
             margin-right: 5px;
         }
+        .total-hits {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .pagination button:hover {
+            background: #0056b3;
+        }
+        .pagination button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
         .loading {
             text-align: center;
             padding: 20px;
@@ -136,31 +162,42 @@
     <div class="container">
         <h1>Luigi's Box Product Search</h1>
         <div class="search-box">
-            <input type="text" id="search-input" placeholder="Enter your search query..." value="testing">
+            <input type="text" id="search-input" placeholder="Enter your search query..." value="testing" onkeydown="if(event.key==='Enter') fetchProducts()">
             <button onclick="fetchProducts()">Search</button>
         </div>
+        <div id="total-hits" class="total-hits"></div>
         <div id="loading" class="loading" style="display: none;">Loading...</div>
         <div id="error" class="error" style="display: none;"></div>
         <div class="grid" id="results-grid">
             <!-- Products will be inserted here by JavaScript -->
         </div>
+        <div id="pagination" class="pagination"></div>
     </div>
 
     <script>
-        async function fetchProducts() {
+        let currentGuid = null;
+        let currentNextPage = null;
+
+        async function fetchProducts(url) {
             const query = document.getElementById('search-input').value.trim();
-            if (!query) return;
+            if (!query && !url) return;
 
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
             const grid = document.getElementById('results-grid');
+            const totalHits = document.getElementById('total-hits');
 
             loading.style.display = 'block';
             error.style.display = 'none';
-            grid.innerHTML = '';
 
             try {
-                const url = `https://live.luigisbox.tech/autocomplete/v2?tracker_id=224905-260203&type=item:5,category:5,query:5&q=${encodeURIComponent(query)}&hostname=www.odkarla.cz`;
+                if (!url) {
+                    grid.innerHTML = '';
+                    totalHits.textContent = '';
+                    currentNextPage = null;
+                    url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f[]=type:item&f[]=availability:1&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96`;
+                }
+
                 const response = await fetch(url);
 
                 if (!response.ok) {
@@ -168,7 +205,14 @@
                 }
 
                 const data = await response.json();
-                renderProducts(data.hits.filter(hit => hit.type === 'item'));
+                const results = data.results || data;
+                const hits = results.hits || [];
+                currentGuid = data.guid;
+                currentNextPage = data.next_page;
+
+                totalHits.textContent = results.total_hits ? `${results.total_hits} products found` : '';
+                renderProducts(hits);
+                renderPagination();
             } catch (err) {
                 error.textContent = `Error: ${err.message}`;
                 error.style.display = 'block';
@@ -219,8 +263,19 @@
             });
         }
 
+        function renderPagination() {
+            const container = document.getElementById('pagination');
+            container.innerHTML = '';
+            if (currentNextPage) {
+                const btn = document.createElement('button');
+                btn.textContent = 'Next Page';
+                btn.onclick = () => fetchProducts(currentNextPage);
+                container.appendChild(btn);
+            }
+        }
+
         // Fetch products on page load with default query
-        window.onload = fetchProducts;
+        window.onload = () => fetchProducts();
     </script>
 </body>
 </html>
