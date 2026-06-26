@@ -1,3 +1,3 @@
 
 TODOs:
-- the image resolution in the modal should be higher
+- do not crop and show the full image in modal
