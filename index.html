@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autocomplete Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Autocomplete Request</h1>
+    <p>Click the button below to send a request to the Luigi's Box autocomplete API.</p>
+    
+    <button onclick="sendRequest()">Send Request</button>
+    
+    <h2>Response:</h2>
+    <div id="response">Waiting for response...</div>
+
+    <script>
+        function sendRequest() {
+            const url = 'https://live.luigisbox.tech/autocomplete/v2?tracker_id=224905-260203&type=item:5,category:5,query:5&q=testing&hostname=www.odkarla.cz';
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById('response').textContent = `Error: ${error.message}`;
+                });
+        }
+    </script>
+</body>
+</html>
