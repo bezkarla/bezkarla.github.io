@@ -16,4 +16,6 @@ Open `index.html` in a browser.
 
 ## TODOs
 
- - make the "Novinka" "Doprava zdarma" "Skoro za polovic" "Výprodej" etc. labels clickable, and add them to filter
+ - maybe avoid odkarla backend for images
+ - ar at least think of a better detection of the number of images not relying on a 404
+ - anything else?
