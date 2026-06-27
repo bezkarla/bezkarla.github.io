@@ -260,10 +260,18 @@
         </div>
         <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
             <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
-            <select id="filter-select" onchange="fetchProducts(1)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
+            <select id="filter-select" onchange="clearLabel();fetchProducts(1)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
                 <option value="">All Items</option>
                 <option value="availability_source:Skladem">In Stock</option>
                 <option value="availability_source:U partnera">Partner Offers</option>
+                <option disabled>── Labels ──</option>
+                <option value="labels:First minute">First minute</option>
+                <option value="labels:Výprodej">Výprodej</option>
+                <option value="labels:Čistím sklad">Čistím sklad</option>
+                <option value="labels:Megavýprodej">Megavýprodej</option>
+                <option value="labels:Skoro za polovic">Skoro za polovic</option>
+                <option value="labels:Novinka">Novinka</option>
+                <option value="labels:Akce">Akce</option>
             </select>
             <select id="sort-select" onchange="fetchProducts(1)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
                 <option value="">Relevance</option>
@@ -289,6 +297,7 @@
         let currentPage = 1;
         let totalHitsCount = 0;
         let lastQuery = '';
+
 
         function buildSearchUrl(page) {
             const query = lastQuery;
@@ -406,7 +415,7 @@
                         ${price ? `<div class="card-price">${price}${oldPrice ? ` <span class="card-old-price">${oldPrice}</span>` : ''}</div>` : ''}
                         ${category ? `<div class="card-category">${category}</div>` : ''}
                         ${availability ? `<div class="card-availability">${availability}</div>` : ''}
-                        ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge">${label}</span>`).join('')}</div>` : ''}
+                            ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge" style="cursor:pointer" onclick="setLabel('${label}')">${label}</span>`).join('')}</div>` : ''}
                             ${description ? `<div class="card-description" data-full="${description.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">${truncate(description, 300)}${description.length > 300 ? ` <a href="#" class="toggle-desc" style="color:#007BFF;font-size:13px;">show more</a>` : ''}</div>` : ''}
                         <div style="margin-top:8px;display:flex;gap:12px;">
                             <a href="${productUrl}" target="_blank" style="color:#007BFF;font-size:14px;">View on odkarla.cz</a>
@@ -507,6 +516,15 @@
                 img.onerror = () => {};
                 img.src = src;
             })(0);
+        }
+
+        function setLabel(label) {
+            document.getElementById('filter-select').value = `labels:${label}`;
+            fetchProducts(1);
+        }
+
+        function clearLabel() {
+            fetchProducts(1);
         }
 
         function closeModal() {

@@ -16,6 +16,4 @@ Open `index.html` in a browser.
 
 ## TODOs
 
- - add an option to filter out, or show only "partner offers", or show both
- - truncate extremely long descriptions (add "ahow more" button/link)
- - square image aspect ratio in the grid
+ - make the "Novinka" "Doprava zdarma" "Skoro za polovic" "Výprodej" etc. labels clickable, and add them to filter
