@@ -176,6 +176,9 @@
             font-size: 16px;
             color: #e63946;
         }
+        #footer .hover-show { display: none; }
+        #footer.hover .hover-hide { display: none; }
+        #footer.hover .hover-show { display: inline; }
         .modal {
             display: none;
             position: fixed;
@@ -288,8 +291,9 @@
         <div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
             <div class="modal-content" id="modal-content"></div>
         </div>
-        <footer id="footer" style="text-align:center;margin-top:40px;padding:20px;color:#999;font-size:14px;border-top:1px solid #ddd;cursor:default;user-select:none;" onmouseenter="this.textContent='🚫 🦶footer? not in this economy! 🚫'" onmouseleave="this.textContent='☕ this slop was proudly vibecoded in 2026 🛋️'">
-            ☕ this slop was proudly vibecoded in 2026 🛋️
+        <footer id="footer" style="text-align:center;margin-top:40px;padding:20px;color:#999;font-size:14px;border-top:1px solid #ddd;cursor:default;" onmouseenter="var f=this;f.classList.add('hover');clearTimeout(f._t);f._t=setTimeout(function(){f.classList.remove('hover')},3000)" onmouseleave="this.classList.remove('hover');clearTimeout(this._t)" onclick="this.classList.remove('hover');clearTimeout(this._t)">
+            <span class="hover-hide">☕ this slop was proudly vibecoded 🛋️ in one night in June 2026 AD<br>📬 send comments, praise 😊 or death threats 💀 to <a href="mailto:fastball-ouch-thus@duck.com" style="color:#999;text-decoration:underline;">fastball-ouch-thus@duck.com</a> or as <a href="https://github.com/bezkarla/bezkarla.github.io" style="color:#999;text-decoration:underline;">GitHub issues</a></span>
+            <span class="hover-show">🚫 proper 🦶footer? not in this economy! 🚫 ☠️🔪💣</span>
         </footer>
     </div>
 
