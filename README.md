@@ -12,7 +12,7 @@ Alternative frontend for OdKarla.cz product search powered by Luigi's Box API.
 
 ## Usage
 
-Open `index.html` in a browser.
+Open `index.html` in a browser. Or just go to https://bezkarla.github.io
 
 ## TODOs
 
