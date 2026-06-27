@@ -44,7 +44,7 @@
         }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 20px;
         }
         .card {
@@ -68,7 +68,7 @@
         }
         .card .main-img {
             width: 100%;
-            height: 200px;
+            aspect-ratio: 1;
             object-fit: cover;
         }
         .card .thumb-strip {
@@ -258,8 +258,13 @@
             <input type="text" id="search-input" placeholder="Enter your search query..." value="testing" onkeydown="if(event.key==='Enter') fetchProducts(1)">
             <button onclick="fetchProducts(1)">Search</button>
         </div>
-        <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;">
+        <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
             <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
+            <select id="filter-select" onchange="fetchProducts(1)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
+                <option value="">All Items</option>
+                <option value="availability_source:Skladem">In Stock</option>
+                <option value="availability_source:U partnera">Partner Offers</option>
+            </select>
             <select id="sort-select" onchange="fetchProducts(1)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
                 <option value="">Relevance</option>
                 <option value="price_amount:asc">Price: Low to High</option>
@@ -288,7 +293,9 @@
         function buildSearchUrl(page) {
             const query = lastQuery;
             const sort = document.getElementById('sort-select').value;
-            let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&f%5B%5D=availability:1&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96`;
+            const filter = document.getElementById('filter-select').value;
+            let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96`;
+            if (filter) url += `&f%5B%5D=${filter}`;
             if (sort) url += `&sort=${sort}`;
             if (page > 1) url += `&page=${page}`;
             return url;
@@ -348,6 +355,31 @@
                 return;
             }
 
+            grid.onclick = (e) => {
+                const link = e.target.closest('.toggle-desc');
+                if (!link) return;
+                e.preventDefault();
+                const desc = link.parentElement;
+                const full = desc.dataset.full;
+                if (desc.textContent.includes('...')) {
+                    desc.textContent = full;
+                    const toggle = document.createElement('a');
+                    toggle.href = '#';
+                    toggle.className = 'toggle-desc';
+                    toggle.style.cssText = 'color:#007BFF;font-size:13px;';
+                    toggle.textContent = 'show less';
+                    desc.appendChild(toggle);
+                } else {
+                    desc.textContent = full.slice(0, 300) + '...';
+                    const toggle = document.createElement('a');
+                    toggle.href = '#';
+                    toggle.className = 'toggle-desc';
+                    toggle.style.cssText = 'color:#007BFF;font-size:13px;';
+                    toggle.textContent = 'show more';
+                    desc.appendChild(toggle);
+                }
+            };
+
             hits.forEach((hit, idx) => {
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -359,11 +391,12 @@
                 const price = attrs.price || '';
                 const oldPrice = attrs.price_old || '';
                 const category = attrs.category ? attrs.category.join(' > ') : '';
-                const availability = attrs.availability_rank_text ? attrs.availability_rank_text[0] : '';
+                const availability = attrs.availability_source ? attrs.availability_source[0] : (attrs.availability_rank_text ? attrs.availability_rank_text[0] : '');
                 const description = attrs.description || '';
                 const labels = attrs.labels || [];
                 const asin = attrs.asin ? attrs.asin[0] : null;
                 const productUrl = `https://www.odkarla.cz${hit.url}`;
+                const truncate = (s, len) => s.length > len ? s.slice(0, len) + '...' : s;
 
                 card.innerHTML = `
                     <img class="main-img" src="${imgUrl}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'" style="cursor:pointer">
@@ -374,7 +407,7 @@
                         ${category ? `<div class="card-category">${category}</div>` : ''}
                         ${availability ? `<div class="card-availability">${availability}</div>` : ''}
                         ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge">${label}</span>`).join('')}</div>` : ''}
-                        ${description ? `<div class="card-description">${description}</div>` : ''}
+                            ${description ? `<div class="card-description" data-full="${description.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">${truncate(description, 300)}${description.length > 300 ? ` <a href="#" class="toggle-desc" style="color:#007BFF;font-size:13px;">show more</a>` : ''}</div>` : ''}
                         <div style="margin-top:8px;display:flex;gap:12px;">
                             <a href="${productUrl}" target="_blank" style="color:#007BFF;font-size:14px;">View on odkarla.cz</a>
                             ${asin ? `<a href="https://www.amazon.de/dp/${asin}" target="_blank" style="color:#007BFF;font-size:14px;">View on Amazon</a>` : ''}

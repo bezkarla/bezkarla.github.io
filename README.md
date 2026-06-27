@@ -13,3 +13,9 @@ Alternative frontend for OdKarla.cz product search powered by Luigi's Box API.
 ## Usage
 
 Open `index.html` in a browser.
+
+## TODOs
+
+ - add an option to filter out, or show only "partner offers", or show both
+ - truncate extremely long descriptions (add "ahow more" button/link)
+ - square image aspect ratio in the grid
