@@ -258,12 +258,12 @@
         <h1>BezKarla</h1>
         <p style="text-align:center;color:#999;margin-top:-10px;margin-bottom:20px;">alternative frontend for OdKarla.cz product search</p>
         <div class="search-box">
-            <input type="text" id="search-input" placeholder="Enter your search query..." value="testing" onkeydown="if(event.key==='Enter') fetchProducts(1)">
-            <button onclick="fetchProducts(1)">Search</button>
+            <input type="text" id="search-input" placeholder="Enter your search query..." value="testing">
+            <button id="search-btn">Search</button>
         </div>
         <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
             <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
-            <select id="filter-select" onchange="clearLabel();fetchProducts(1)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
+            <select id="filter-select" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
                 <option value="">All Items</option>
                 <option value="availability_source:Skladem">In Stock</option>
                 <option value="availability_source:U partnera">Partner Offers</option>
@@ -276,7 +276,7 @@
                 <option value="labels:Novinka">Novinka</option>
                 <option value="labels:Akce">Akce</option>
             </select>
-            <select id="sort-select" onchange="fetchProducts(1)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
+            <select id="sort-select" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
                 <option value="">Relevance</option>
                 <option value="price_amount:asc">Price: Low to High</option>
                 <option value="price_amount:desc">Price: High to Low</option>
@@ -288,10 +288,10 @@
             <!-- Products will be inserted here by JavaScript -->
         </div>
         <div id="pagination" class="pagination"></div>
-        <div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
+        <div id="modal" class="modal">
             <div class="modal-content" id="modal-content"></div>
         </div>
-        <footer id="footer" style="text-align:center;margin-top:40px;padding:20px;color:#999;font-size:14px;border-top:1px solid #ddd;cursor:default;" onmouseenter="var f=this;f.classList.add('hover');clearTimeout(f._t);f._t=setTimeout(function(){f.classList.remove('hover')},3000)" onmouseleave="this.classList.remove('hover');clearTimeout(this._t)" onclick="this.classList.remove('hover');clearTimeout(this._t)">
+        <footer id="footer" style="text-align:center;margin-top:40px;padding:20px;color:#999;font-size:14px;border-top:1px solid #ddd;cursor:default;">
             <span class="hover-hide">☕ this slop was proudly vibecoded 🛋️ in one night in June 2026 AD<br>📬 send comments, praise 😊 or death threats 💀 to <a href="mailto:fastball-ouch-thus@duck.com" style="color:#999;text-decoration:underline;">fastball-ouch-thus@duck.com</a> or as <a href="https://github.com/bezkarla/bezkarla.github.io" style="color:#999;text-decoration:underline;">GitHub issues</a></span>
             <span class="hover-show">🚫 proper 🦶footer? not in this economy! 🚫 ☠️🔪💣</span>
         </footer>
@@ -302,13 +302,36 @@
         let totalHitsCount = 0;
         let lastQuery = '';
 
+        function probeImages(imgUrl, strip, mainImg) {
+            const uscore = imgUrl.lastIndexOf('_');
+            const dot = imgUrl.lastIndexOf('.jpg');
+            if (uscore === -1 || dot === -1) return;
+            const prefix = imgUrl.substring(0, uscore);
+            const suffix = imgUrl.substring(dot + 4);
+            (function probe(n) {
+                const src = `${prefix}_${n}.jpg${suffix}`;
+                const img = new Image();
+                img.onload = () => {
+                    const thumb = document.createElement('img');
+                    thumb.className = 'thumb' + (n === 0 ? ' selected' : '');
+                    thumb.src = src;
+                    const switchImg = () => { mainImg.src = src; strip.querySelectorAll('.thumb').forEach(t => t.classList.remove('selected')); thumb.classList.add('selected'); };
+                    thumb.onmouseenter = switchImg;
+                    thumb.onclick = switchImg;
+                    strip.appendChild(thumb);
+                    probe(n + 1);
+                };
+                img.onerror = () => {};
+                img.src = src;
+            })(0);
+        }
 
         function buildSearchUrl(page) {
             const query = lastQuery;
             const sort = document.getElementById('sort-select').value;
             const filter = document.getElementById('filter-select').value;
             let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96`;
-            if (filter) url += `&f%5B%5D=${filter}`;
+            if (filter) url += `&f%5B%5D=${encodeURIComponent(filter)}`;
             if (sort) url += `&sort=${sort}`;
             if (page > 1) url += `&page=${page}`;
             return url;
@@ -369,6 +392,8 @@
             }
 
             grid.onclick = (e) => {
+                const badge = e.target.closest('.badge');
+                if (badge) { setLabel(badge.dataset.label); return; }
                 const link = e.target.closest('.toggle-desc');
                 if (!link) return;
                 e.preventDefault();
@@ -419,7 +444,7 @@
                         ${price ? `<div class="card-price">${price}${oldPrice ? ` <span class="card-old-price">${oldPrice}</span>` : ''}</div>` : ''}
                         ${category ? `<div class="card-category">${category}</div>` : ''}
                         ${availability ? `<div class="card-availability">${availability}</div>` : ''}
-                            ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge" style="cursor:pointer" onclick="setLabel('${label}')">${label}</span>`).join('')}</div>` : ''}
+                            ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge" data-label="${label.replace(/"/g,'&quot;')}" style="cursor:pointer">${label}</span>`).join('')}</div>` : ''}
                             ${description ? `<div class="card-description" data-full="${description.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">${truncate(description, 300)}${description.length > 300 ? ` <a href="#" class="toggle-desc" style="color:#007BFF;font-size:13px;">show more</a>` : ''}</div>` : ''}
                         <div style="margin-top:8px;display:flex;gap:12px;">
                             <a href="${productUrl}" target="_blank" style="color:#007BFF;font-size:14px;">View on odkarla.cz</a>
@@ -432,26 +457,7 @@
                 const strip = card.querySelector('.thumb-strip');
                 const main = card.querySelector('.main-img');
                 main.onclick = () => openModal({imgUrl: imgUrlL, title, price, oldPrice, category, availability, description, labels, asin, productUrl});
-                const uscore = imgUrl.lastIndexOf('_');
-                const dot = imgUrl.lastIndexOf('.jpg');
-                const prefix = imgUrl.substring(0, uscore);
-                const suffix = imgUrl.substring(dot + 4);
-                (function probe(n) {
-                    const src = `${prefix}_${n}.jpg${suffix}`;
-                    const img = new Image();
-                    img.onload = () => {
-                        const thumb = document.createElement('img');
-                        thumb.className = 'thumb' + (n === 0 ? ' selected' : '');
-                        thumb.src = src;
-                        const switchImg = () => { main.src = src; strip.querySelectorAll('.thumb').forEach(t => t.classList.remove('selected')); thumb.classList.add('selected'); };
-                        thumb.onmouseenter = switchImg;
-                        thumb.onclick = switchImg;
-                        strip.appendChild(thumb);
-                        probe(n + 1);
-                    };
-                    img.onerror = () => {};
-                    img.src = src;
-                })(0);
+                probeImages(imgUrl, strip, main);
             });
         }
 
@@ -500,26 +506,7 @@
 
             const modalMain = content.querySelector('.main-img');
             const modalStrip = content.querySelector('#modal-thumbs');
-            const uscore = data.imgUrl.lastIndexOf('_');
-            const dot = data.imgUrl.lastIndexOf('.jpg');
-            const prefix = data.imgUrl.substring(0, uscore);
-            const suffix = data.imgUrl.substring(dot + 4);
-            (function probe(n) {
-                const src = `${prefix}_${n}.jpg${suffix}`;
-                const img = new Image();
-                img.onload = () => {
-                    const thumb = document.createElement('img');
-                    thumb.className = 'thumb' + (n === 0 ? ' selected' : '');
-                    thumb.src = src;
-                    const switchImg = () => { modalMain.src = src; modalStrip.querySelectorAll('.thumb').forEach(t => t.classList.remove('selected')); thumb.classList.add('selected'); };
-                    thumb.onmouseenter = switchImg;
-                    thumb.onclick = switchImg;
-                    modalStrip.appendChild(thumb);
-                    probe(n + 1);
-                };
-                img.onerror = () => {};
-                img.src = src;
-            })(0);
+            probeImages(data.imgUrl, modalStrip, modalMain);
         }
 
         function setLabel(label) {
@@ -527,16 +514,24 @@
             fetchProducts(1);
         }
 
-        function clearLabel() {
-            fetchProducts(1);
-        }
-
         function closeModal() {
             document.getElementById('modal').classList.remove('open');
         }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+        // Event listeners
+        document.getElementById('search-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') fetchProducts(1); });
+        document.getElementById('search-btn').addEventListener('click', () => fetchProducts(1));
+        document.getElementById('filter-select').addEventListener('change', () => fetchProducts(1));
+        document.getElementById('sort-select').addEventListener('change', () => fetchProducts(1));
+        document.getElementById('modal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+        const footer = document.getElementById('footer');
+        footer.addEventListener('mouseenter', function() { this.classList.add('hover'); clearTimeout(this._t); this._t = setTimeout(() => this.classList.remove('hover'), 3000); });
+        footer.addEventListener('mouseleave', function() { this.classList.remove('hover'); clearTimeout(this._t); });
+        footer.addEventListener('click', function() { this.classList.remove('hover'); clearTimeout(this._t); });
 
         // Fetch products on page load with default query
-        window.onload = () => fetchProducts(1);
+        fetchProducts(1);
     </script>
 </body>
 </html>
