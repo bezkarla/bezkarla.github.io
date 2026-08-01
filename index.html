@@ -184,6 +184,19 @@
             text-decoration: line-through;
             margin-left: 8px;
         }
+        .card-rating {
+            font-size: 13px;
+            color: var(--muted-3);
+            margin: 4px 0;
+        }
+        .card-rating .stars {
+            color: #f1c40f;
+            letter-spacing: 1px;
+            margin-right: 4px;
+        }
+        .card-rating .rate-count {
+            color: var(--muted-2);
+        }
         .card-category {
             font-size: 14px;
             color: var(--muted);
@@ -861,6 +874,11 @@
             }
         }
 
+        function buildStars(r) {
+            const filled = Math.max(0, Math.min(5, Math.round(r)));
+            return '★'.repeat(filled) + '☆'.repeat(5 - filled);
+        }
+
         function renderProducts(hits) {
             const grid = document.getElementById('results-grid');
             grid.innerHTML = '';
@@ -914,6 +932,10 @@
                 const description = attrs.description || '';
                 const labels = attrs.labels || [];
                 const asin = attrs.asin ? attrs.asin[0] : null;
+                const ratingVal = attrs.average_rating;
+                const rating = ratingVal ? parseFloat(Array.isArray(ratingVal) ? ratingVal[0] : ratingVal) : null;
+                const ratingCountVal = attrs.user_rated_total;
+                const ratingCount = ratingCountVal ? parseInt(Array.isArray(ratingCountVal) ? ratingCountVal[0] : ratingCountVal, 10) : null;
                 const productUrl = `https://www.odkarla.cz${hit.url}`;
                 const truncate = (s, len) => s.length > len ? s.slice(0, len) + '...' : s;
                 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -928,6 +950,7 @@
                     <div class="card-content">
                         <div class="card-title"><a href="${productUrl}" target="_blank">${title}</a></div>
                         ${price ? `<div class="card-price">${price}${oldPrice ? ` <span class="card-old-price">${oldPrice}</span>` : ''}</div>` : ''}
+                        ${rating ? `<div class="card-rating"><span class="stars">${buildStars(rating)}</span> ${rating}${ratingCount ? ` <span class="rate-count">(${ratingCount})</span>` : ''}</div>` : ''}
                         ${catSteps ? `<div class="card-category">${catSteps}</div>` : ''}
                         ${availability || labels.length ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0;">${availability ? `<span class="card-availability" style="margin:0;">${availability}</span>` : ''}${labels.map(label => `<span class="badge" data-label="${label.replace(/"/g,'&quot;')}" style="cursor:pointer;margin:0;">${label}</span>`).join('')}</div>` : ''}
                             ${description ? `<div class="card-description" data-full="${description.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">${truncate(description, 300)}${description.length > 300 ? ` <a href="#" class="toggle-desc" style="color:var(--link);font-size:13px;">show more</a>` : ''}</div>` : ''}
@@ -941,7 +964,7 @@
                 grid.appendChild(card);
                 const strip = card.querySelector('.thumb-strip');
                 const main = card.querySelector('.main-img');
-                main.onclick = () => openModal({imgUrl: imgUrlL, title, price, oldPrice, category, availability, description, labels, asin, productUrl});
+                main.onclick = () => openModal({imgUrl: imgUrlL, title, price, oldPrice, category, availability, description, labels, asin, productUrl, rating, ratingCount});
                 probeImages(imgUrl, strip, main);
             });
         }
@@ -981,6 +1004,7 @@
                 <div class="card-content">
                     <div class="card-title"><a href="${data.productUrl}" target="_blank">${data.title}</a></div>
                     ${data.price ? `<div class="card-price">${data.price}${data.oldPrice ? ` <span class="card-old-price">${data.oldPrice}</span>` : ''}</div>` : ''}
+                    ${data.rating ? `<div class="card-rating"><span class="stars">${buildStars(data.rating)}</span> ${data.rating}${data.ratingCount ? ` <span class="rate-count">(${data.ratingCount})</span>` : ''}</div>` : ''}
                     ${data.category ? `<div class="card-category">${data.category}</div>` : ''}
                     ${data.availability ? `<div class="card-availability">${data.availability}</div>` : ''}
                     ${labels.length > 0 ? `<div>${labels.map(l => `<span class="badge">${l}</span>`).join('')}</div>` : ''}
