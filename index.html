@@ -437,7 +437,7 @@
                 const truncate = (s, len) => s.length > len ? s.slice(0, len) + '...' : s;
 
                 card.innerHTML = `
-                    <img class="main-img" src="${imgUrl}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'" style="cursor:pointer">
+                    <img class="main-img" src="${imgUrl}" alt="${title}" onerror="this.src='noimage_300x200.svg'" style="cursor:pointer">
                     <div class="thumb-strip"></div>
                     <div class="card-content">
                         <div class="card-title"><a href="${productUrl}" target="_blank">${title}</a></div>
@@ -487,7 +487,7 @@
             const labels = data.labels || [];
             content.innerHTML = `
                 <span class="modal-close" onclick="closeModal()">&times;</span>
-                <img class="main-img" src="${data.imgUrl}" alt="${data.title}" onerror="this.src='https://via.placeholder.com/600x400?text=No+Image'">
+                <img class="main-img" src="${data.imgUrl}" alt="${data.title}" onerror="this.src='noimage_600x400.svg'">
                 <div class="thumb-strip" id="modal-thumbs"></div>
                 <div class="card-content">
                     <div class="card-title"><a href="${data.productUrl}" target="_blank">${data.title}</a></div>
