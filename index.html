@@ -118,6 +118,12 @@
             text-align: center;
             color: var(--text);
         }
+        h1.title-click {
+            cursor: pointer;
+        }
+        h1.title-click:hover {
+            color: var(--link);
+        }
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -141,12 +147,19 @@
             background: var(--green);
             color: white;
             border: none;
-            border-radius: 0 4px 4px 0;
+            border-radius: 0;
             cursor: pointer;
             font-size: 16px;
         }
         .search-box button:hover {
             background: var(--green-hover);
+        }
+        .search-box .reset-btn {
+            background: var(--grey);
+            border-radius: 0 4px 4px 0;
+        }
+        .search-box .reset-btn:hover {
+            background: var(--grey-hover);
         }
         .grid {
             display: grid;
@@ -634,7 +647,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>BezKarla</h1>
+        <h1 class="title-click" id="title" data-i18n-title="resetTitle">BezKarla</h1>
         <p style="text-align:center;color:var(--muted-2);margin-top:-10px;margin-bottom:20px;" data-i18n="subtitle">alternative frontend for OdKarla.cz product search</p>
         <div class="topbar">
             <div class="lang-toggle" id="lang-toggle" role="group" aria-label="Language">
@@ -646,6 +659,7 @@
         <div class="search-box">
             <input type="text" id="search-input" placeholder="Enter your search query..." value="" data-i18n-placeholder="searchPlaceholder">
             <button id="search-btn" data-i18n="searchBtn">Search</button>
+            <button id="reset-btn" type="button" class="reset-btn" data-i18n="reset" data-i18n-title="resetTitle">Reset</button>
         </div>
         <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
             <select id="filter-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
@@ -754,6 +768,8 @@
                 sortPriceDesc: 'Price: High to Low',
                 sortRatingDesc: 'Rating: High to Low',
                 clearAll: 'Clear all',
+                reset: 'Reset',
+                resetTitle: 'Click to reset search',
                 categoryHeader: 'Category',
                 filterHeader: 'Filter',
                 loading: 'Loading...',
@@ -806,6 +822,8 @@
                 sortPriceDesc: 'Cena: od nejvyšší',
                 sortRatingDesc: 'Hodnocení: od nejvyššího',
                 clearAll: 'Vymazat vše',
+                reset: 'Resetovat',
+                resetTitle: 'Kliknutím resetujete vyhledávání',
                 categoryHeader: 'Kategorie',
                 filterHeader: 'Filtr',
                 loading: 'Načítání...',
@@ -1578,13 +1596,35 @@
         }
 
         const clearAllBtn = document.getElementById('clear-all-btn');
-        clearAllBtn.addEventListener('click', () => {
+        clearAllBtn.addEventListener('click', resetFilters);
+        updateFilterCount();
+
+        function resetFilters() {
+            document.getElementById('filter-select').value = '';
+            document.getElementById('ratings-filter').checked = false;
+            document.getElementById('ratings-min').value = 10;
+            document.getElementById('ratings-min').disabled = true;
+            document.getElementById('stars-filter').checked = false;
+            document.getElementById('stars-min').value = 4;
+            document.getElementById('stars-min').disabled = true;
+            ratingsFilter = false;
+            ratingsMin = 10;
+            starsFilter = false;
+            starsMin = 4;
             Object.keys(categoryState).forEach(path => delete categoryState[path]);
+            resetRatingsState();
             renderCategoryTree();
             updateFilterCount();
             fetchProducts(1);
-        });
-        updateFilterCount();
+        }
+
+        function resetSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('sort-select').value = '';
+            resetFilters();
+        }
+        document.getElementById('reset-btn').addEventListener('click', resetSearch);
+        document.getElementById('title').addEventListener('click', resetSearch);
 
         async function seedCategories() {
             const base = 'https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&facets=category&size=200';
