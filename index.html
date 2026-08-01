@@ -461,6 +461,10 @@
             });
         }
 
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function renderPagination() {
             const container = document.getElementById('pagination');
             container.innerHTML = '';
@@ -470,14 +474,14 @@
             if (currentPage > 1) {
                 const prev = document.createElement('button');
                 prev.textContent = 'Previous Page';
-                prev.onclick = () => fetchProducts(currentPage - 1);
+                prev.onclick = () => { scrollToTop(); fetchProducts(currentPage - 1); };
                 container.appendChild(prev);
             }
 
             if (currentPage < totalPages) {
                 const next = document.createElement('button');
                 next.textContent = 'Next Page';
-                next.onclick = () => fetchProducts(currentPage + 1);
+                next.onclick = () => { scrollToTop(); fetchProducts(currentPage + 1); };
                 container.appendChild(next);
             }
         }
