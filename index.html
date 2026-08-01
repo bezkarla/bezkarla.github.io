@@ -620,10 +620,15 @@
             <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false">
                 <span class="filters-arrow">&#9656;</span> Category filters <span id="filters-count" class="filters-count"></span>
             </button>
-            <span class="ratings-filter" title="Only products with more than the given number of ratings">
-                <input type="checkbox" id="ratings-filter"> more than
+            <span class="ratings-filter" title="Only products with at least the given number of ratings">
+                <input type="checkbox" id="ratings-filter"> at least
                 <input type="number" id="ratings-min" class="ratings-min" min="1" step="1" value="10" disabled aria-label="Minimum number of ratings">
                 ratings
+            </span>
+            <span class="ratings-filter" title="Only products rated at least the given number of stars">
+                <input type="checkbox" id="stars-filter"> at least
+                <input type="number" id="stars-min" class="ratings-min" min="1" step="0.5" max="5" value="4" disabled aria-label="Minimum star rating">
+                stars
             </span>
             <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
             <select id="sort-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
@@ -669,6 +674,8 @@
         let applyingHash = false;
         let ratingsFilter = false;
         let ratingsMin = 10;
+        let starsFilter = false;
+        let starsMin = 4;
         let ratingsApiPage = 1;
         let ratingsCheckedTotal = 0;
         let ratingsTotal = 0;
@@ -687,6 +694,10 @@
             ratingsTotal = 0;
             ratingsMore = false;
             ratingsRawCache.clear();
+        }
+
+        function isClientFiltered() {
+            return ratingsFilter || starsFilter;
         }
 
         function addThumb(prefix, suffix, mainImg, strip, n) {
@@ -731,7 +742,7 @@
             const query = lastQuery;
             const sort = document.getElementById('sort-select').value;
             const filter = document.getElementById('filter-select').value;
-            const size = ratingsFilter ? 200 : 96;
+            const size = isClientFiltered() ? 200 : 96;
             let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&facets=price_amount,category,brand,labels,availability_source&size=${size}`;
             if (query) url += `&q=${encodeURIComponent(query)}`;
             if (filter) url += `&f%5B%5D=${encodeURIComponent(filter)}`;
@@ -886,9 +897,16 @@
 
         async function fetchRatingsPage(targetPage) {
             const predicate = h => {
-                const v = h.attributes && h.attributes.user_rated_total;
+                const attrs = h.attributes || {};
+                const v = attrs.user_rated_total;
                 const c = v ? parseInt(Array.isArray(v) ? v[0] : v, 10) : 0;
-                return c > ratingsMin;
+                if (ratingsFilter && c < ratingsMin) return false;
+                if (starsFilter) {
+                    const s = attrs.average_rating;
+                    const r = s ? parseFloat(Array.isArray(s) ? s[0] : s) : 0;
+                    if (r < starsMin) return false;
+                }
+                return true;
             };
             const rebuild = () => {
                 let filtered = [];
@@ -942,7 +960,7 @@
                 lastQuery = query;
                 page = 1;
             }
-            if (ratingsFilter) {
+            if (isClientFiltered()) {
                 const activeCats = Object.entries(categoryState)
                     .filter(([, v]) => v === 'blacklist' || v === 'whitelist')
                     .sort((a, b) => a[0].localeCompare(b[0]))
@@ -951,7 +969,8 @@
                 const key = [lastQuery,
                     document.getElementById('sort-select').value,
                     document.getElementById('filter-select').value,
-                    ratingsMin,
+                    ratingsMin, ratingsFilter,
+                    starsMin, starsFilter,
                     activeCats
                 ].join('|');
                 if (key !== ratingsSearchKey) {
@@ -979,7 +998,7 @@
                 }
 
                 let hits, results;
-                if (ratingsFilter) {
+                if (isClientFiltered()) {
                     const fetched = await fetchRatingsPage(currentPage);
                     hits = fetched.hits;
                     results = { total_hits: fetched.total };
@@ -995,12 +1014,16 @@
                 currentPage = page;
                 totalHitsCount = results.total_hits || 0;
 
-                if (ratingsFilter) {
+                if (isClientFiltered()) {
                     const total = results.total_hits || 0;
                     totalHitsCount = hits.length;
+                    const criteria = [];
+                    if (ratingsFilter) criteria.push(`at least ${ratingsMin} ratings`);
+                    if (starsFilter) criteria.push(`at least ${starsMin} stars`);
+                    const suffix = ratingsCheckedTotal < total ? ` (first ${ratingsCheckedTotal} checked)` : '';
                     totalHits.textContent = hits.length
-                        ? `${hits.length} products with more than ${ratingsMin} ratings${ratingsCheckedTotal < total ? ` (first ${ratingsCheckedTotal} checked)` : ''}`
-                        : `No products with more than ${ratingsMin} ratings${ratingsCheckedTotal < total ? ` (first ${ratingsCheckedTotal} checked)` : ''}`;
+                        ? `${hits.length} products with ${criteria.join(' and ')}${suffix}`
+                        : `No products with ${criteria.join(' and ')}${suffix}`;
                 } else {
                     totalHits.textContent = totalHitsCount ? `${totalHitsCount} products found` : '';
                 }
@@ -1119,7 +1142,7 @@
         function renderPagination() {
             const container = document.getElementById('pagination');
             container.innerHTML = '';
-            if (ratingsFilter) {
+            if (isClientFiltered()) {
                 if (currentPage > 1) {
                     const prev = document.createElement('button');
                     prev.textContent = 'Previous Page';
@@ -1209,6 +1232,20 @@
             ratingsMinEl.value = ratingsMin;
             if (ratingsFilter) fetchProducts(1);
         });
+
+        const starsEl = document.getElementById('stars-filter');
+        const starsMinEl = document.getElementById('stars-min');
+        starsEl.addEventListener('change', () => {
+            starsFilter = starsEl.checked;
+            starsMinEl.disabled = !starsFilter;
+            if (starsFilter) starsMin = Math.min(5, Math.max(1, parseFloat(starsMinEl.value) || 4));
+            fetchProducts(1);
+        });
+        starsMinEl.addEventListener('change', () => {
+            starsMin = Math.min(5, Math.max(1, parseFloat(starsMinEl.value) || 4));
+            starsMinEl.value = starsMin;
+            if (starsFilter) fetchProducts(1);
+        });
         document.getElementById('modal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
         const footer = document.getElementById('footer');
         footer.addEventListener('mouseenter', function() { this.classList.add('hover'); clearTimeout(this._t); this._t = setTimeout(() => this.classList.remove('hover'), 3000); });
@@ -1251,6 +1288,7 @@
                 if (raw && typeof raw === 'object' && !Array.isArray(raw)) categories = raw;
             } catch (e) { categories = {}; }
             const r = parseInt(params.get('r') || '0', 10) || 0;
+            const s = parseFloat(params.get('s') || '0') || 0;
             return {
                 q: params.get('q'),
                 sort: params.get('sort') || '',
@@ -1258,6 +1296,8 @@
                 page: Math.max(1, parseInt(params.get('page') || '1', 10) || 1),
                 ratings: r > 0,
                 ratingsMin: r > 0 ? r : 10,
+                stars: s > 0,
+                starsMin: s > 0 ? s : 4,
                 categories
             };
         }
@@ -1272,8 +1312,13 @@
             document.getElementById('ratings-filter').checked = state.ratings;
             document.getElementById('ratings-min').value = state.ratingsMin;
             document.getElementById('ratings-min').disabled = !state.ratings;
+            document.getElementById('stars-filter').checked = state.stars;
+            document.getElementById('stars-min').value = state.starsMin;
+            document.getElementById('stars-min').disabled = !state.stars;
             ratingsFilter = state.ratings;
             ratingsMin = state.ratingsMin;
+            starsFilter = state.stars;
+            starsMin = state.starsMin;
             Object.keys(categoryState).forEach(k => delete categoryState[k]);
             Object.assign(categoryState, state.categories);
             applyingHash = false;
@@ -1290,7 +1335,8 @@
             if (document.getElementById('sort-select').value) params.set('sort', document.getElementById('sort-select').value);
             if (document.getElementById('filter-select').value) params.set('filter', document.getElementById('filter-select').value);
             if (ratingsFilter) params.set('r', String(ratingsMin));
-            if (currentPage > 1 && !ratingsFilter) params.set('page', String(currentPage));
+            if (starsFilter) params.set('s', String(starsMin));
+            if (currentPage > 1 && !isClientFiltered()) params.set('page', String(currentPage));
             const active = {};
             Object.entries(categoryState).forEach(([k, v]) => { if (v !== 'off') active[k] = v; });
             if (Object.keys(active).length) params.set('c', JSON.stringify(active));
