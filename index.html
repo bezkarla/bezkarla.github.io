@@ -151,6 +151,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 20px;
+            scroll-margin-top: 16px;
         }
         .card {
             background: var(--card-bg);
@@ -1316,8 +1317,10 @@
             });
         }
 
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        function scrollToProducts() {
+            const target = document.getElementById('results-grid');
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            else window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function renderPagination() {
@@ -1327,13 +1330,13 @@
                 if (currentPage > 1) {
                     const prev = document.createElement('button');
                     prev.textContent = t('prevPage');
-                    prev.onclick = () => { scrollToTop(); fetchProducts(currentPage - 1); };
+                    prev.onclick = () => { scrollToProducts(); fetchProducts(currentPage - 1); };
                     container.appendChild(prev);
                 }
                 if (ratingsMore) {
                     const next = document.createElement('button');
                     next.textContent = t('nextPage');
-                    next.onclick = () => { scrollToTop(); fetchProducts(currentPage + 1); };
+                    next.onclick = () => { scrollToProducts(); fetchProducts(currentPage + 1); };
                     container.appendChild(next);
                 }
                 return;
@@ -1344,14 +1347,14 @@
             if (currentPage > 1) {
                 const prev = document.createElement('button');
                 prev.textContent = t('prevPage');
-                prev.onclick = () => { scrollToTop(); fetchProducts(currentPage - 1); };
+                prev.onclick = () => { scrollToProducts(); fetchProducts(currentPage - 1); };
                 container.appendChild(prev);
             }
 
             if (currentPage < totalPages) {
                 const next = document.createElement('button');
                 next.textContent = t('nextPage');
-                next.onclick = () => { scrollToTop(); fetchProducts(currentPage + 1); };
+                next.onclick = () => { scrollToProducts(); fetchProducts(currentPage + 1); };
                 container.appendChild(next);
             }
         }
