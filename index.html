@@ -5,15 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BezKarla</title>
     <style>
+        :root {
+            --bg: #f5f5f5;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --muted: #666666;
+            --muted-2: #999999;
+            --muted-3: #555555;
+            --muted-4: #cccccc;
+            --border: #dddddd;
+            --border-soft: #eeeeee;
+            --hover-bg: #f8f9fa;
+            --link: #007BFF;
+            --link-hover: #0056b3;
+            --accent: #e63946;
+            --green: #2a9d8f;
+            --grey: #6c757d;
+            --grey-hover: #545b62;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.15);
+            --cat-sep: #aaa;
+            --cat-toggle-hover-bg: #e9ecef;
+            --badge-text: #333333;
+            color-scheme: light;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1d21;
+            --card-bg: #23272c;
+            --text: #e8eaed;
+            --muted: #b0b6be;
+            --muted-2: #8a9099;
+            --muted-3: #c0c5cc;
+            --muted-4: #5a6068;
+            --border: #3a4046;
+            --border-soft: #33383e;
+            --hover-bg: #2c3138;
+            --link: #4d9fff;
+            --link-hover: #7ab5ff;
+            --accent: #ff6b6b;
+            --green: #52c7b4;
+            --grey: #6c757d;
+            --grey-hover: #545b62;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.6);
+            --cat-sep: #6a7078;
+            --cat-toggle-hover-bg: #3a4046;
+            --badge-text: #333333;
+            color-scheme: dark;
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            padding: 6px 14px;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            z-index: 900;
+        }
+        .theme-toggle:hover {
+            background: var(--hover-bg);
+            color: var(--text);
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--bg);
         }
         h1 {
             text-align: center;
-            color: #333;
+            color: var(--text);
         }
         .container {
             max-width: 1200px;
@@ -26,13 +91,15 @@
         .search-box input {
             flex: 1;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border);
             border-radius: 4px 0 0 4px;
             font-size: 16px;
+            background: var(--card-bg);
+            color: var(--text);
         }
         .search-box button {
             padding: 10px 20px;
-            background: #007BFF;
+            background: var(--link);
             color: white;
             border: none;
             border-radius: 0 4px 4px 0;
@@ -40,7 +107,7 @@
             font-size: 16px;
         }
         .search-box button:hover {
-            background: #0056b3;
+            background: var(--link-hover);
         }
         .grid {
             display: grid;
@@ -48,20 +115,20 @@
             gap: 20px;
         }
         .card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: var(--card-shadow);
             transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
         }
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: var(--card-shadow-hover);
         }
         .card a {
             text-decoration: none;
-            color: #007BFF;
+            color: var(--link);
         }
         .card a:hover {
             text-decoration: underline;
@@ -92,7 +159,7 @@
         }
         .card .thumb-strip .thumb.selected {
             opacity: 1;
-            border-color: #007BFF;
+            border-color: var(--link);
         }
         .card-content {
             padding: 15px;
@@ -101,31 +168,31 @@
             font-size: 16px;
             font-weight: bold;
             margin-bottom: 8px;
-            color: #333;
+            color: var(--text);
         }
         .card-price {
             font-size: 18px;
-            color: #e63946;
+            color: var(--accent);
             font-weight: bold;
             margin: 8px 0;
         }
         .card-old-price {
             font-size: 14px;
-            color: #999;
+            color: var(--muted-2);
             text-decoration: line-through;
             margin-left: 8px;
         }
         .card-category {
             font-size: 14px;
-            color: #666;
+            color: var(--muted);
             margin: 8px 0;
         }
         .cat-sep {
-            color: #aaa;
+            color: var(--cat-sep);
             margin: 0 4px;
         }
         .cat-name {
-            color: #007BFF;
+            color: var(--link);
             cursor: pointer;
             text-decoration: underline;
         }
@@ -141,32 +208,32 @@
             line-height: 1;
             padding: 0;
             margin-left: 4px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--muted-4);
             border-radius: 3px;
-            background: #fff;
-            color: #666;
+            background: var(--card-bg);
+            color: var(--muted);
             font-size: 12px;
             cursor: pointer;
             vertical-align: middle;
         }
         .cat-toggle:hover {
-            background: #e9ecef;
-            border-color: #999;
+            background: var(--cat-toggle-hover-bg);
+            border-color: var(--muted-2);
         }
         .card-availability {
             font-size: 14px;
-            color: #2a9d8f;
+            color: var(--green);
             margin: 8px 0;
         }
         .card-description {
             font-size: 14px;
-            color: #555;
+            color: var(--muted-3);
             margin-top: 8px;
         }
         .badge {
             display: inline-block;
             background: #f1c40f;
-            color: #333;
+            color: var(--badge-text);
             padding: 3px 8px;
             border-radius: 4px;
             font-size: 12px;
@@ -175,7 +242,7 @@
         .total-hits {
             text-align: center;
             font-size: 16px;
-            color: #666;
+            color: var(--muted);
         }
         .pagination {
             text-align: center;
@@ -183,7 +250,7 @@
         }
         .pagination button {
             padding: 10px 20px;
-            background: #007BFF;
+            background: var(--link);
             color: white;
             border: none;
             border-radius: 4px;
@@ -191,10 +258,10 @@
             font-size: 16px;
         }
         .pagination button:hover {
-            background: #0056b3;
+            background: var(--link-hover);
         }
         .pagination button:disabled {
-            background: #ccc;
+            background: var(--muted-4);
             cursor: not-allowed;
         }
         .blacklist {
@@ -205,8 +272,8 @@
             flex-wrap: wrap;
             margin-bottom: 20px;
             padding: 10px 14px;
-            background: #fff;
-            border: 1px solid #ddd;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 14px;
         }
@@ -219,7 +286,7 @@
         }
         .mode-all-btn {
             padding: 4px 12px;
-            background: #007BFF;
+            background: var(--link);
             color: white;
             border: none;
             border-radius: 4px;
@@ -227,7 +294,7 @@
             font-size: 13px;
         }
         .mode-all-btn:hover {
-            background: #0056b3;
+            background: var(--link-hover);
         }
         .bl-grid {
             display: grid;
@@ -245,13 +312,13 @@
         }
         .bl-header {
             font-weight: bold;
-            color: #999;
+            color: var(--muted-2);
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .bl-name {
-            color: #333;
+            color: var(--text);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -271,7 +338,7 @@
             font-size: 14px;
         }
         .tree-node:hover {
-            background: #f8f9fa;
+            background: var(--hover-bg);
         }
         .tree-label {
             display: flex;
@@ -283,16 +350,16 @@
             display: inline-block;
             width: 16px;
             cursor: pointer;
-            color: #007BFF;
+            color: var(--link);
             user-select: none;
             flex: 0 0 16px;
         }
         .tree-caret.empty {
-            color: #ccc;
+            color: var(--muted-4);
             cursor: default;
         }
         .tree-name {
-            color: #333;
+            color: var(--text);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -300,16 +367,16 @@
         }
         .ternary {
             display: inline-flex;
-            border: 1px solid #ccc;
+            border: 1px solid var(--muted-4);
             border-radius: 4px;
             overflow: hidden;
         }
         .tri {
             padding: 4px 10px;
             border: none;
-            border-left: 1px solid #eee;
-            background: #fff;
-            color: #666;
+            border-left: 1px solid var(--border-soft);
+            background: var(--card-bg);
+            color: var(--muted);
             cursor: pointer;
             font-size: 13px;
             line-height: 1.2;
@@ -318,36 +385,36 @@
             border-left: none;
         }
         .tri:hover {
-            background: #f0f0f0;
+            background: var(--hover-bg);
         }
         .tri.active {
             font-weight: bold;
         }
         .tri.tri-off.active {
-            background: #999;
+            background: var(--muted-2);
             color: #fff;
         }
         .tri.tri-hide.active,
         .tri.tri-blacklist.active {
-            background: #e63946;
+            background: var(--accent);
             color: #fff;
         }
         .tri.tri-show.active,
         .tri.tri-whitelist.active {
-            background: #2a9d8f;
+            background: var(--green);
             color: #fff;
         }
         .clear-all-btn {
-            background: #6c757d;
+            background: var(--grey);
         }
         .clear-all-btn:hover {
-            background: #545b62;
+            background: var(--grey-hover);
         }
         .filters {
             margin-bottom: 20px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            background: #fff;
+            background: var(--card-bg);
             overflow: hidden;
         }
         .filters-toggle {
@@ -355,7 +422,7 @@
             width: 100%;
             padding: 10px 14px;
             background: transparent;
-            color: #333;
+            color: var(--text);
             border: none;
             cursor: pointer;
             font-size: 15px;
@@ -363,20 +430,20 @@
             text-align: left;
         }
         .filters-toggle:hover {
-            background: #f8f9fa;
+            background: var(--hover-bg);
         }
         .filters-arrow {
             display: inline-block;
             transition: transform 0.2s;
             margin-right: 6px;
-            color: #007BFF;
+            color: var(--link);
             transform: rotate(90deg);
         }
         .filters.collapsed .filters-arrow {
             transform: rotate(0deg);
         }
         .filters-body {
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--border-soft);
             padding: 8px;
         }
         .filters.collapsed .filters-body {
@@ -386,7 +453,7 @@
             margin-bottom: 0;
         }
         .filters-count {
-            color: #e63946;
+            color: var(--accent);
             font-size: 13px;
             margin-left: 6px;
         }
@@ -394,13 +461,13 @@
             text-align: center;
             padding: 20px;
             font-size: 16px;
-            color: #666;
+            color: var(--muted);
         }
         .error {
             text-align: center;
             padding: 20px;
             font-size: 16px;
-            color: #e63946;
+            color: var(--accent);
         }
         #footer .hover-show { display: none; }
         #footer.hover .hover-hide { display: none; }
@@ -419,7 +486,7 @@
             display: flex;
         }
         .modal-content {
-            background: white;
+            background: var(--card-bg);
             border-radius: 8px;
             max-width: 800px;
             width: 100%;
@@ -433,17 +500,17 @@
             right: 14px;
             font-size: 28px;
             cursor: pointer;
-            color: #999;
+            color: var(--muted-2);
             z-index: 1;
         }
         .modal-close:hover {
-            color: #333;
+            color: var(--text);
         }
         .modal .main-img {
             width: 100%;
             max-height: 70vh;
             object-fit: contain;
-            background: #f0f0f0;
+            background: var(--hover-bg);
         }
         .modal .thumb-strip {
             display: flex;
@@ -466,7 +533,7 @@
         }
         .modal .thumb-strip .thumb.selected {
             opacity: 1;
-            border-color: #007BFF;
+            border-color: var(--link);
         }
         .modal .card-content {
             padding: 20px;
@@ -482,14 +549,15 @@
 <body>
     <div class="container">
         <h1>BezKarla</h1>
-        <p style="text-align:center;color:#999;margin-top:-10px;margin-bottom:20px;">alternative frontend for OdKarla.cz product search</p>
+        <p style="text-align:center;color:var(--muted-2);margin-top:-10px;margin-bottom:20px;">alternative frontend for OdKarla.cz product search</p>
+        <button id="theme-toggle" type="button" class="theme-toggle">Dark mode</button>
         <div class="search-box">
             <input type="text" id="search-input" placeholder="Enter your search query..." value="">
             <button id="search-btn">Search</button>
         </div>
         <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
             <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
-            <select id="filter-select" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
+            <select id="filter-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
                 <option value="">All Items</option>
                 <option value="availability_source:Skladem">In Stock</option>
                 <option value="availability_source:U partnera">Partner Offers</option>
@@ -502,7 +570,7 @@
                 <option value="labels:Novinka">Novinka</option>
                 <option value="labels:Akce">Akce</option>
             </select>
-            <select id="sort-select" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:14px;">
+            <select id="sort-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
                 <option value="">Relevance</option>
                 <option value="price_amount:asc">Price: Low to High</option>
                 <option value="price_amount:desc">Price: High to Low</option>
@@ -534,8 +602,8 @@
         <div id="modal" class="modal">
             <div class="modal-content" id="modal-content"></div>
         </div>
-        <footer id="footer" style="text-align:center;margin-top:40px;padding:20px;color:#999;font-size:14px;border-top:1px solid #ddd;cursor:default;">
-            <span class="hover-hide">☕ this slop was proudly vibecoded 🛋️ in one night in June 2026 AD<br>📬 send comments, praise 😊 or death threats 💀 to <a href="mailto:fastball-ouch-thus@duck.com" style="color:#999;text-decoration:underline;">fastball-ouch-thus@duck.com</a> or as <a href="https://github.com/bezkarla/bezkarla.github.io" style="color:#999;text-decoration:underline;">GitHub issues</a></span>
+        <footer id="footer" style="text-align:center;margin-top:40px;padding:20px;color:var(--muted-2);font-size:14px;border-top:1px solid var(--border);cursor:default;">
+            <span class="hover-hide">☕ this slop was proudly vibecoded 🛋️ in one night in June 2026 AD<br>📬 send comments, praise 😊 or death threats 💀 to <a href="mailto:fastball-ouch-thus@duck.com" style="color:var(--muted-2);text-decoration:underline;">fastball-ouch-thus@duck.com</a> or as <a href="https://github.com/bezkarla/bezkarla.github.io" style="color:var(--muted-2);text-decoration:underline;">GitHub issues</a></span>
             <span class="hover-show">🚫 proper 🦶footer? not in this economy! 🚫 ☠️🔪💣</span>
         </footer>
     </div>
@@ -815,7 +883,7 @@
                     const toggle = document.createElement('a');
                     toggle.href = '#';
                     toggle.className = 'toggle-desc';
-                    toggle.style.cssText = 'color:#007BFF;font-size:13px;';
+                    toggle.style.cssText = 'color:var(--link);font-size:13px;';
                     toggle.textContent = 'show less';
                     desc.appendChild(toggle);
                 } else {
@@ -823,7 +891,7 @@
                     const toggle = document.createElement('a');
                     toggle.href = '#';
                     toggle.className = 'toggle-desc';
-                    toggle.style.cssText = 'color:#007BFF;font-size:13px;';
+                    toggle.style.cssText = 'color:var(--link);font-size:13px;';
                     toggle.textContent = 'show more';
                     desc.appendChild(toggle);
                 }
@@ -861,10 +929,10 @@
                         ${catSteps ? `<div class="card-category">${catSteps}</div>` : ''}
                         ${availability ? `<div class="card-availability">${availability}</div>` : ''}
                             ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge" data-label="${label.replace(/"/g,'&quot;')}" style="cursor:pointer">${label}</span>`).join('')}</div>` : ''}
-                            ${description ? `<div class="card-description" data-full="${description.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">${truncate(description, 300)}${description.length > 300 ? ` <a href="#" class="toggle-desc" style="color:#007BFF;font-size:13px;">show more</a>` : ''}</div>` : ''}
+                            ${description ? `<div class="card-description" data-full="${description.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">${truncate(description, 300)}${description.length > 300 ? ` <a href="#" class="toggle-desc" style="color:var(--link);font-size:13px;">show more</a>` : ''}</div>` : ''}
                         <div style="margin-top:8px;display:flex;gap:12px;">
-                            <a href="${productUrl}" target="_blank" style="color:#007BFF;font-size:14px;">View on odkarla.cz</a>
-                            ${asin ? `<a href="https://www.amazon.de/dp/${asin}" target="_blank" style="color:#007BFF;font-size:14px;">View on Amazon</a>` : ''}
+                            <a href="${productUrl}" target="_blank" style="color:var(--link);font-size:14px;">View on odkarla.cz</a>
+                            ${asin ? `<a href="https://www.amazon.de/dp/${asin}" target="_blank" style="color:var(--link);font-size:14px;">View on Amazon</a>` : ''}
                         </div>
                     </div>
                 `;
@@ -917,8 +985,8 @@
                     ${labels.length > 0 ? `<div>${labels.map(l => `<span class="badge">${l}</span>`).join('')}</div>` : ''}
                     ${data.description ? `<div class="card-description">${data.description}</div>` : ''}
                     <div style="margin-top:8px;display:flex;gap:12px;">
-                        <a href="${data.productUrl}" target="_blank" style="color:#007BFF;font-size:14px;">View on odkarla.cz</a>
-                        ${data.asin ? `<a href="https://www.amazon.de/dp/${data.asin}" target="_blank" style="color:#007BFF;font-size:14px;">View on Amazon</a>` : ''}
+                        <a href="${data.productUrl}" target="_blank" style="color:var(--link);font-size:14px;">View on odkarla.cz</a>
+                        ${data.asin ? `<a href="https://www.amazon.de/dp/${data.asin}" target="_blank" style="color:var(--link);font-size:14px;">View on Amazon</a>` : ''}
                     </div>
                 </div>
             `;
@@ -955,6 +1023,23 @@
         document.getElementById('filters-toggle').addEventListener('click', () => {
             filters.classList.toggle('collapsed');
             document.getElementById('filters-toggle').setAttribute('aria-expanded', !filters.classList.contains('collapsed'));
+        });
+
+        const themeToggle = document.getElementById('theme-toggle');
+        function applyTheme(theme) {
+            document.documentElement.dataset.theme = theme;
+            themeToggle.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
+            themeToggle.setAttribute('aria-pressed', String(theme === 'dark'));
+            try { localStorage.setItem('bezkarla-theme', theme); } catch (e) {}
+        }
+        let initialTheme = 'light';
+        try {
+            initialTheme = localStorage.getItem('bezkarla-theme')
+                || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        } catch (e) {}
+        applyTheme(initialTheme);
+        themeToggle.addEventListener('click', () => {
+            applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
         });
 
         function updateFilterCount() {
