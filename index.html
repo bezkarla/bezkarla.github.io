@@ -55,10 +55,16 @@
             --badge-text: #333333;
             color-scheme: dark;
         }
-        .theme-toggle {
+        .topbar {
             position: fixed;
             top: 12px;
             right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 900;
+        }
+        .theme-toggle {
             padding: 6px 14px;
             background: transparent;
             color: var(--muted);
@@ -66,11 +72,41 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 13px;
-            z-index: 900;
         }
         .theme-toggle:hover {
             background: var(--hover-bg);
             color: var(--text);
+        }
+        .lang-toggle {
+            display: inline-flex;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .lang-btn {
+            padding: 6px 10px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1.2;
+        }
+        .lang-btn + .lang-btn {
+            border-left: 1px solid var(--border);
+        }
+        .lang-btn:hover {
+            background: var(--hover-bg);
+            color: var(--text);
+        }
+        .lang-btn.active {
+            background: var(--link);
+            color: #fff;
+            font-weight: bold;
+        }
+        .lang-btn.active:hover {
+            background: var(--link-hover);
+            color: #fff;
         }
         body {
             font-family: Arial, sans-serif;
@@ -597,18 +633,24 @@
 <body>
     <div class="container">
         <h1>BezKarla</h1>
-        <p style="text-align:center;color:var(--muted-2);margin-top:-10px;margin-bottom:20px;">alternative frontend for OdKarla.cz product search</p>
-        <button id="theme-toggle" type="button" class="theme-toggle">Dark mode</button>
+        <p style="text-align:center;color:var(--muted-2);margin-top:-10px;margin-bottom:20px;" data-i18n="subtitle">alternative frontend for OdKarla.cz product search</p>
+        <div class="topbar">
+            <div class="lang-toggle" id="lang-toggle" role="group" aria-label="Language">
+                <button type="button" class="lang-btn" data-lang="en">EN</button>
+                <button type="button" class="lang-btn" data-lang="cs">CZ</button>
+            </div>
+            <button id="theme-toggle" type="button" class="theme-toggle">Dark mode</button>
+        </div>
         <div class="search-box">
-            <input type="text" id="search-input" placeholder="Enter your search query..." value="">
-            <button id="search-btn">Search</button>
+            <input type="text" id="search-input" placeholder="Enter your search query..." value="" data-i18n-placeholder="searchPlaceholder">
+            <button id="search-btn" data-i18n="searchBtn">Search</button>
         </div>
         <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
             <select id="filter-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
-                <option value="">All Items</option>
-                <option value="availability_source:Skladem">In Stock</option>
-                <option value="availability_source:U partnera">Partner Offers</option>
-                <option disabled>── Labels ──</option>
+                <option value="" data-i18n="allItems">All Items</option>
+                <option value="availability_source:Skladem" data-i18n="inStock">In Stock</option>
+                <option value="availability_source:U partnera" data-i18n="partnerOffers">Partner Offers</option>
+                <option disabled data-i18n="labelsHeader">── Labels ──</option>
                 <option value="labels:First minute">First minute</option>
                 <option value="labels:Výprodej">Výprodej</option>
                 <option value="labels:Čistím sklad">Čistím sklad</option>
@@ -618,41 +660,41 @@
                 <option value="labels:Akce">Akce</option>
             </select>
             <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false">
-                <span class="filters-arrow">&#9656;</span> Category filters <span id="filters-count" class="filters-count"></span>
+                <span class="filters-arrow">&#9656;</span> <span data-i18n="categoryFilters">Category filters</span> <span id="filters-count" class="filters-count"></span>
             </button>
-            <span class="ratings-filter" title="Only products with at least the given number of ratings">
-                <input type="checkbox" id="ratings-filter"> at least
-                <input type="number" id="ratings-min" class="ratings-min" min="1" step="1" value="10" disabled aria-label="Minimum number of ratings">
-                ratings
+            <span class="ratings-filter" title="Only products with at least the given number of ratings" data-i18n-title="ratingsTitle">
+                <input type="checkbox" id="ratings-filter"> <span data-i18n="atLeast">at least</span>
+                <input type="number" id="ratings-min" class="ratings-min" min="1" step="1" value="10" disabled aria-label="Minimum number of ratings" data-i18n-aria="ratingsMinAria">
+                <span data-i18n="ratings">ratings</span>
             </span>
-            <span class="ratings-filter" title="Only products rated at least the given number of stars">
-                <input type="checkbox" id="stars-filter"> at least
-                <input type="number" id="stars-min" class="ratings-min" min="1" step="0.5" max="5" value="4" disabled aria-label="Minimum star rating">
-                stars
+            <span class="ratings-filter" title="Only products rated at least the given number of stars" data-i18n-title="starsTitle">
+                <input type="checkbox" id="stars-filter"> <span data-i18n="atLeast">at least</span>
+                <input type="number" id="stars-min" class="ratings-min" min="1" step="0.5" max="5" value="4" disabled aria-label="Minimum star rating" data-i18n-aria="starsMinAria">
+                <span data-i18n="stars">stars</span>
             </span>
             <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
             <select id="sort-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
-                <option value="">Relevance (incl. fuzzy matches &amp; synonyms)</option>
-                <option value="price_amount:asc">Price: Low to High</option>
-                <option value="price_amount:desc">Price: High to Low</option>
-                <option value="average_rating:desc">Rating: High to Low</option>
+                <option value="" data-i18n="sortRelevance">Relevance (incl. fuzzy matches &amp; synonyms)</option>
+                <option value="price_amount:asc" data-i18n="sortPriceAsc">Price: Low to High</option>
+                <option value="price_amount:desc" data-i18n="sortPriceDesc">Price: High to Low</option>
+                <option value="average_rating:desc" data-i18n="sortRatingDesc">Rating: High to Low</option>
             </select>
         </div>
         <div class="filters collapsed" id="filters">
             <div id="filters-body" class="filters-body">
         <div class="bl-controls">
-            <button id="clear-all-btn" class="mode-all-btn clear-all-btn">Clear all</button>
+            <button id="clear-all-btn" class="mode-all-btn clear-all-btn" data-i18n="clearAll">Clear all</button>
         </div>
         <div class="blacklist bl-grid">
             <div class="bl-row bl-header">
-                <span class="bl-name">Category</span>
-                <span class="bl-col">Filter</span>
+                <span class="bl-name" data-i18n="categoryHeader">Category</span>
+                <span class="bl-col" data-i18n="filterHeader">Filter</span>
             </div>
             <div id="category-tree"></div>
 
         </div>            </div>
         </div>
-        <div id="loading" class="loading" style="display: none;">Loading...</div>
+        <div id="loading" class="loading" style="display: none;" data-i18n="loading">Loading...</div>
         <div id="error" class="error" style="display: none;"></div>
         <div class="grid" id="results-grid">
             <!-- Products will be inserted here by JavaScript -->
@@ -662,8 +704,8 @@
             <div class="modal-content" id="modal-content"></div>
         </div>
         <footer id="footer" style="text-align:center;margin-top:40px;padding:20px;color:var(--muted-2);font-size:14px;border-top:1px solid var(--border);cursor:default;">
-            <span class="hover-hide">☕ this slop was proudly vibecoded 🛋️ in one night in June 2026 AD<br>📬 send comments, praise 😊 or death threats 💀 to <a href="mailto:fastball-ouch-thus@duck.com" style="color:var(--muted-2);text-decoration:underline;">fastball-ouch-thus@duck.com</a> or as <a href="https://github.com/bezkarla/bezkarla.github.io" style="color:var(--muted-2);text-decoration:underline;">GitHub issues</a></span>
-            <span class="hover-show">🚫 proper 🦶footer? not in this economy! 🚫 ☠️🔪💣</span>
+            <span class="hover-hide" data-i18n-html="footer">☕ this slop was proudly vibecoded 🛋️ in one night in June 2026 AD<br>📬 send comments, praise 😊 or death threats 💀 to <a href="mailto:fastball-ouch-thus@duck.com" style="color:var(--muted-2);text-decoration:underline;">fastball-ouch-thus@duck.com</a> or as <a href="https://github.com/bezkarla/bezkarla.github.io" style="color:var(--muted-2);text-decoration:underline;">GitHub issues</a></span>
+            <span class="hover-show" data-i18n-html="footerHover">🚫 proper 🦶footer? not in this economy! 🚫 ☠️🔪💣</span>
         </footer>
     </div>
 
@@ -687,6 +729,135 @@
         const MAX_RATINGS_PAGES = 5;
         const PAGE_SIZE = 96;
         const imageProbeCache = new Map();
+
+        const translations = {
+            en: {
+                subtitle: 'alternative frontend for OdKarla.cz product search',
+                searchPlaceholder: 'Enter your search query...',
+                searchBtn: 'Search',
+                allItems: 'All Items',
+                inStock: 'In Stock',
+                partnerOffers: 'Partner Offers',
+                labelsHeader: '── Labels ──',
+                categoryFilters: 'Category filters',
+                atLeast: 'at least',
+                ratings: 'ratings',
+                stars: 'stars',
+                ratingsTitle: 'Only products with at least the given number of ratings',
+                starsTitle: 'Only products rated at least the given number of stars',
+                ratingsMinAria: 'Minimum number of ratings',
+                starsMinAria: 'Minimum star rating',
+                sortRelevance: 'Relevance (incl. fuzzy matches & synonyms)',
+                sortPriceAsc: 'Price: Low to High',
+                sortPriceDesc: 'Price: High to Low',
+                sortRatingDesc: 'Rating: High to Low',
+                clearAll: 'Clear all',
+                categoryHeader: 'Category',
+                filterHeader: 'Filter',
+                loading: 'Loading...',
+                noProducts: 'No products found.',
+                noTitle: 'No Title',
+                noImageUrl: 'https://via.placeholder.com/300x200?text=No+Image',
+                showMore: 'show more',
+                showLess: 'show less',
+                viewOnOdKarla: 'View on odkarla.cz',
+                viewOnAmazon: 'View on Amazon',
+                prevPage: 'Previous Page',
+                nextPage: 'Next Page',
+                errorPrefix: 'Error: ',
+                hide: 'Hide',
+                show: 'Show',
+                showOnly: (name) => 'Show only ' + name,
+                hideCat: (name) => 'Hide ' + name,
+                activeCount: (n) => n === 1 ? '(1 active)' : `(${n} active)`,
+                ratingsCriteria: (n) => n == 1 ? 'at least 1 rating' : `at least ${n} ratings`,
+                starsCriteria: (n) => n == 1 ? 'at least 1 star' : `at least ${n} stars`,
+                joinCriteria: (parts) => parts.join(' and '),
+                productsFound: (n) => n === 1 ? '1 product found' : `${n} products found`,
+                productsWith: (n, criteria) => `${n} ${n === 1 ? 'product' : 'products'} with ${criteria}`,
+                noProductsWith: (criteria) => 'No products with ' + criteria,
+                checkedSuffix: (n) => ` (first ${n} checked)`,
+                themeDark: 'Dark mode',
+                themeLight: 'Light mode',
+                langAria: 'Switch language',
+                footer: '☕ this slop was proudly vibecoded 🛋️ in one night in June 2026 AD<br>📬 send comments, praise 😊 or death threats 💀 to <a href="mailto:fastball-ouch-thus@duck.com" style="color:var(--muted-2);text-decoration:underline;">fastball-ouch-thus@duck.com</a> or as <a href="https://github.com/bezkarla/bezkarla.github.io" style="color:var(--muted-2);text-decoration:underline;">GitHub issues</a>',
+                footerHover: '🚫 proper 🦶footer? not in this economy! 🚫 ☠️🔪💣'
+            },
+            cs: {
+                subtitle: 'alternativní frontend pro vyhledávání zboží na OdKarla.cz',
+                searchPlaceholder: 'Zadejte vyhledávací dotaz...',
+                searchBtn: 'Hledat',
+                allItems: 'Všechny položky',
+                inStock: 'Skladem',
+                partnerOffers: 'Nabídky partnerů',
+                labelsHeader: '── Štítky ──',
+                categoryFilters: 'Filtry kategorií',
+                atLeast: 'alespoň',
+                ratings: 'hodnocení',
+                stars: 'hvězd',
+                ratingsTitle: 'Pouze produkty s alespoň zadaným počtem hodnocení',
+                starsTitle: 'Pouze produkty hodnocené alespoň zadaným počtem hvězd',
+                ratingsMinAria: 'Minimální počet hodnocení',
+                starsMinAria: 'Minimální hvězdné hodnocení',
+                sortRelevance: 'Relevance (vč. přibližných shod a synonym)',
+                sortPriceAsc: 'Cena: od nejnižší',
+                sortPriceDesc: 'Cena: od nejvyšší',
+                sortRatingDesc: 'Hodnocení: od nejvyššího',
+                clearAll: 'Vymazat vše',
+                categoryHeader: 'Kategorie',
+                filterHeader: 'Filtr',
+                loading: 'Načítání...',
+                noProducts: 'Nebyly nalezeny žádné produkty.',
+                noTitle: 'Bez názvu',
+                noImageUrl: 'https://via.placeholder.com/300x200?text=Bez+obr%C3%A1zku',
+                showMore: 'zobrazit více',
+                showLess: 'zobrazit méně',
+                viewOnOdKarla: 'Zobrazit na odkarla.cz',
+                viewOnAmazon: 'Zobrazit na Amazonu',
+                prevPage: 'Předchozí stránka',
+                nextPage: 'Další stránka',
+                errorPrefix: 'Chyba: ',
+                hide: 'Skrýt',
+                show: 'Zobrazit',
+                showOnly: (name) => 'Zobrazit pouze ' + name,
+                hideCat: (name) => 'Skrýt ' + name,
+                activeCount: (n) => {
+                    if (n === 1) return '(1 aktivní)';
+                    if (n >= 2 && n <= 4) return `(${n} aktivní)`;
+                    return `(${n} aktivních)`;
+                },
+                ratingsCriteria: (n) => n == 1 ? 'alespoň 1 hodnocením' : `alespoň ${n} hodnoceními`,
+                starsCriteria: (n) => n == 1 ? 'alespoň 1 hvězdou' : `alespoň ${n} hvězdami`,
+                joinCriteria: (parts) => parts.join(' a '),
+                productsFound: (n) => {
+                    if (n === 1) return 'Nalezen 1 produkt';
+                    if (n >= 2 && n <= 4) return `Nalezeny ${n} produkty`;
+                    return `Nalezeno ${n} produktů`;
+                },
+                productsWith: (n, criteria) => {
+                    let form;
+                    if (n === 1) form = 'produkt';
+                    else if (n >= 2 && n <= 4) form = 'produkty';
+                    else form = 'produktů';
+                    return `${n} ${form} s ${criteria}`;
+                },
+                noProductsWith: (criteria) => 'Žádné produkty s ' + criteria,
+                checkedSuffix: (n) => ` (zkontrolováno ${n})`,
+                themeDark: 'Tmavý režim',
+                themeLight: 'Světlý režim',
+                langAria: 'Přepnout jazyk',
+                footer: '☕ tento slop byl hrdě navajbkóděn 🛋️ za jednu noc v červnu léta Páně 2026<br>📬 komentáře, chválu 😊 či výhrůžky 💀 posílejte na <a href="mailto:fastball-ouch-thus@duck.com" style="color:var(--muted-2);text-decoration:underline;">fastball-ouch-thus@duck.com</a> nebo jako <a href="https://github.com/bezkarla/bezkarla.github.io" style="color:var(--muted-2);text-decoration:underline;">GitHub issues</a>',
+                footerHover: '🚫 pořádná 🦶patička? v téhle ekonomice? ne! 🚫 ☠️🔪💣'
+            }
+        };
+        let currentLang = 'en';
+        let lastHits = null;
+        let lastResults = null;
+
+        function t(key, ...args) {
+            const val = translations[currentLang][key];
+            return typeof val === 'function' ? val(...args) : val;
+        }
 
         function resetRatingsState() {
             ratingsApiPage = 1;
@@ -852,7 +1023,7 @@
                         b.type = 'button';
                         b.className = 'tri tri-' + st + (st === state ? ' active' : '');
                         b.dataset.state = st;
-                        b.textContent = st === 'off' ? '—' : (st === 'blacklist' ? 'Hide' : 'Show');
+                        b.textContent = st === 'off' ? '—' : (st === 'blacklist' ? t('hide') : t('show'));
                         tern.appendChild(b);
                     });
 
@@ -954,6 +1125,23 @@
             return { hits: pageHits, total: ratingsTotal };
         }
 
+        function updateTotalHits() {
+            const totalHits = document.getElementById('total-hits');
+            if (isClientFiltered()) {
+                const total = (lastResults && lastResults.total_hits) || 0;
+                const criteria = [];
+                if (ratingsFilter) criteria.push(t('ratingsCriteria', ratingsMin));
+                if (starsFilter) criteria.push(t('starsCriteria', starsMin));
+                const crit = t('joinCriteria', criteria);
+                const suffix = ratingsCheckedTotal < total ? t('checkedSuffix', ratingsCheckedTotal) : '';
+                totalHits.textContent = (lastHits && lastHits.length)
+                    ? t('productsWith', lastHits.length, crit) + suffix
+                    : t('noProductsWith', crit) + suffix;
+            } else {
+                totalHits.textContent = totalHitsCount ? t('productsFound', totalHitsCount) : '';
+            }
+        }
+
         async function fetchProducts(page) {
             const query = document.getElementById('search-input').value.trim();
             if (page === undefined || page === 1) {
@@ -1013,27 +1201,20 @@
                 }
                 currentPage = page;
                 totalHitsCount = results.total_hits || 0;
+                lastResults = results;
+                lastHits = hits;
 
                 if (isClientFiltered()) {
-                    const total = results.total_hits || 0;
                     totalHitsCount = hits.length;
-                    const criteria = [];
-                    if (ratingsFilter) criteria.push(`at least ${ratingsMin} ratings`);
-                    if (starsFilter) criteria.push(`at least ${starsMin} stars`);
-                    const suffix = ratingsCheckedTotal < total ? ` (first ${ratingsCheckedTotal} checked)` : '';
-                    totalHits.textContent = hits.length
-                        ? `${hits.length} products with ${criteria.join(' and ')}${suffix}`
-                        : `No products with ${criteria.join(' and ')}${suffix}`;
-                } else {
-                    totalHits.textContent = totalHitsCount ? `${totalHitsCount} products found` : '';
                 }
+                updateTotalHits();
 
                 renderProducts(hits);
                 renderPagination();
                 mergeCategories(hits);
                 renderCategoryTree();
             } catch (err) {
-                error.textContent = `Error: ${err.message}`;
+                error.textContent = t('errorPrefix') + err.message;
                 error.style.display = 'block';
             } finally {
                 loading.style.display = 'none';
@@ -1050,7 +1231,7 @@
             grid.innerHTML = '';
 
             if (hits.length === 0) {
-                grid.innerHTML = '<div class="error">No products found.</div>';
+                grid.innerHTML = `<div class="error">${t('noProducts')}</div>`;
                 return;
             }
 
@@ -1070,7 +1251,7 @@
                     toggle.href = '#';
                     toggle.className = 'toggle-desc';
                     toggle.style.cssText = 'color:var(--link);font-size:13px;';
-                    toggle.textContent = 'show less';
+                    toggle.textContent = t('showLess');
                     desc.appendChild(toggle);
                 } else {
                     desc.textContent = full.slice(0, 300) + '...';
@@ -1078,7 +1259,7 @@
                     toggle.href = '#';
                     toggle.className = 'toggle-desc';
                     toggle.style.cssText = 'color:var(--link);font-size:13px;';
-                    toggle.textContent = 'show more';
+                    toggle.textContent = t('showMore');
                     desc.appendChild(toggle);
                 }
             };
@@ -1088,9 +1269,9 @@
                 card.className = 'card';
 
                 const attrs = hit.attributes || {};
-                const imgUrl = attrs.image_link || 'https://via.placeholder.com/300x200?text=No+Image';
+                const imgUrl = attrs.image_link || t('noImageUrl');
                 const imgUrlL = attrs.image_link_l || imgUrl;
-                const title = attrs.title || 'No Title';
+                const title = attrs.title || t('noTitle');
                 const price = attrs.price || '';
                 const oldPrice = attrs.price_old || '';
                 const category = attrs.category ? attrs.category.join(' > ') : '';
@@ -1107,7 +1288,7 @@
                 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                 const catSteps = attrs.category ? attrs.category.map((seg, i) => {
                     const fp = attrs.category.slice(0, i + 1).join(' > ');
-                    return `<span class="cat-step"><span class="cat-name" data-path="${esc(fp)}" data-act="whitelist" title="Show only ${esc(seg)}">${esc(seg)}</span><button class="cat-toggle" type="button" data-path="${esc(fp)}" data-act="blacklist" title="Hide ${esc(seg)}">−</button></span>`;
+                    return `<span class="cat-step"><span class="cat-name" data-path="${esc(fp)}" data-act="whitelist" title="${esc(t('showOnly', seg))}">${esc(seg)}</span><button class="cat-toggle" type="button" data-path="${esc(fp)}" data-act="blacklist" title="${esc(t('hideCat', seg))}">−</button></span>`;
                 }).join('<span class="cat-sep">&gt;</span>') : '';
 
                 card.innerHTML = `
@@ -1119,10 +1300,10 @@
                         ${rating ? `<div class="card-rating"><span class="stars">${buildStars(rating)}</span> ${rating}${ratingCount ? ` <span class="rate-count">(${ratingCount})</span>` : ''}</div>` : ''}
                         ${catSteps ? `<div class="card-category">${catSteps}</div>` : ''}
                         ${availability || labels.length ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0;">${availability ? `<span class="card-availability" style="margin:0;">${availability}</span>` : ''}${labels.map(label => `<span class="badge" data-label="${label.replace(/"/g,'&quot;')}" style="cursor:pointer;margin:0;">${label}</span>`).join('')}</div>` : ''}
-                            ${description ? `<div class="card-description" data-full="${description.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">${truncate(description, 300)}${description.length > 300 ? ` <a href="#" class="toggle-desc" style="color:var(--link);font-size:13px;">show more</a>` : ''}</div>` : ''}
+                            ${description ? `<div class="card-description" data-full="${description.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">${truncate(description, 300)}${description.length > 300 ? ` <a href="#" class="toggle-desc" style="color:var(--link);font-size:13px;">${t('showMore')}</a>` : ''}</div>` : ''}
                         <div style="margin-top:8px;display:flex;gap:12px;">
-                            <a href="${productUrl}" target="_blank" style="color:var(--link);font-size:14px;">View on odkarla.cz</a>
-                            ${asin ? `<a href="https://www.amazon.de/dp/${asin}" target="_blank" style="color:var(--link);font-size:14px;">View on Amazon</a>` : ''}
+                            <a href="${productUrl}" target="_blank" style="color:var(--link);font-size:14px;">${t('viewOnOdKarla')}</a>
+                            ${asin ? `<a href="https://www.amazon.de/dp/${asin}" target="_blank" style="color:var(--link);font-size:14px;">${t('viewOnAmazon')}</a>` : ''}
                         </div>
                     </div>
                 `;
@@ -1145,13 +1326,13 @@
             if (isClientFiltered()) {
                 if (currentPage > 1) {
                     const prev = document.createElement('button');
-                    prev.textContent = 'Previous Page';
+                    prev.textContent = t('prevPage');
                     prev.onclick = () => { scrollToTop(); fetchProducts(currentPage - 1); };
                     container.appendChild(prev);
                 }
                 if (ratingsMore) {
                     const next = document.createElement('button');
-                    next.textContent = 'Next Page';
+                    next.textContent = t('nextPage');
                     next.onclick = () => { scrollToTop(); fetchProducts(currentPage + 1); };
                     container.appendChild(next);
                 }
@@ -1162,14 +1343,14 @@
 
             if (currentPage > 1) {
                 const prev = document.createElement('button');
-                prev.textContent = 'Previous Page';
+                prev.textContent = t('prevPage');
                 prev.onclick = () => { scrollToTop(); fetchProducts(currentPage - 1); };
                 container.appendChild(prev);
             }
 
             if (currentPage < totalPages) {
                 const next = document.createElement('button');
-                next.textContent = 'Next Page';
+                next.textContent = t('nextPage');
                 next.onclick = () => { scrollToTop(); fetchProducts(currentPage + 1); };
                 container.appendChild(next);
             }
@@ -1191,8 +1372,8 @@
                     ${labels.length > 0 ? `<div>${labels.map(l => `<span class="badge">${l}</span>`).join('')}</div>` : ''}
                     ${data.description ? `<div class="card-description">${data.description}</div>` : ''}
                     <div style="margin-top:8px;display:flex;gap:12px;">
-                        <a href="${data.productUrl}" target="_blank" style="color:var(--link);font-size:14px;">View on odkarla.cz</a>
-                        ${data.asin ? `<a href="https://www.amazon.de/dp/${data.asin}" target="_blank" style="color:var(--link);font-size:14px;">View on Amazon</a>` : ''}
+                        <a href="${data.productUrl}" target="_blank" style="color:var(--link);font-size:14px;">${t('viewOnOdKarla')}</a>
+                        ${data.asin ? `<a href="https://www.amazon.de/dp/${data.asin}" target="_blank" style="color:var(--link);font-size:14px;">${t('viewOnAmazon')}</a>` : ''}
                     </div>
                 </div>
             `;
@@ -1261,7 +1442,7 @@
         const themeToggle = document.getElementById('theme-toggle');
         function applyTheme(theme) {
             document.documentElement.dataset.theme = theme;
-            themeToggle.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
+            themeToggle.textContent = theme === 'dark' ? t('themeLight') : t('themeDark');
             themeToggle.setAttribute('aria-pressed', String(theme === 'dark'));
             try { localStorage.setItem('bezkarla-theme', theme); } catch (e) {}
         }
@@ -1275,9 +1456,56 @@
             applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
         });
 
+        const langToggle = document.getElementById('lang-toggle');
+        function applyLang(lang, save = true) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            langToggle.querySelectorAll('.lang-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.lang === lang);
+                b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+            });
+            document.getElementById('lang-toggle').setAttribute('aria-label', t('langAria'));
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[currentLang][key] !== undefined) el.textContent = t(key);
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                el.placeholder = t(el.dataset.i18nPlaceholder);
+            });
+            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                el.title = t(el.dataset.i18nTitle);
+            });
+            document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+                el.setAttribute('aria-label', t(el.dataset.i18nAria));
+            });
+            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+                el.innerHTML = t(el.dataset.i18nHtml);
+            });
+            themeToggle.textContent = document.documentElement.dataset.theme === 'dark' ? t('themeLight') : t('themeDark');
+            renderCategoryTree();
+            updateFilterCount();
+            if (lastHits) {
+                renderProducts(lastHits);
+                updateTotalHits();
+                renderPagination();
+            }
+            if (save) {
+                try { localStorage.setItem('bezkarla-lang', lang); } catch (e) {}
+            }
+        }
+        let initialLang = 'en';
+        try {
+            const storedLang = localStorage.getItem('bezkarla-lang');
+            initialLang = storedLang || (navigator.language && navigator.language.toLowerCase().startsWith('cs') ? 'cs' : 'en');
+        } catch (e) {}
+        langToggle.querySelectorAll('.lang-btn').forEach(b => {
+            b.addEventListener('click', () => applyLang(b.dataset.lang));
+        });
+        applyLang(initialLang, false);
+
         function updateFilterCount() {
             const count = Object.values(categoryState).filter(s => s !== 'off').length;
-            document.getElementById('filters-count').textContent = count ? `(${count} active)` : '';
+            document.getElementById('filters-count').textContent = count ? t('activeCount', count) : '';
         }
 
         function parseHash() {
