@@ -164,6 +164,51 @@
             background: #ccc;
             cursor: not-allowed;
         }
+        .blacklist {
+            display: flex;
+            gap: 8px 14px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 10px 14px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .blacklist-label {
+            font-weight: bold;
+            color: #333;
+        }
+        .blacklist-sep {
+            width: 1px;
+            height: 20px;
+            background: #ddd;
+        }
+        .mode-all-btn {
+            padding: 4px 12px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .mode-all-btn:hover {
+            background: #0056b3;
+        }
+        .blacklist-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #555;
+            cursor: pointer;
+            user-select: none;
+        }
+        .blacklist-item input {
+            cursor: pointer;
+        }
         .loading {
             text-align: center;
             padding: 20px;
@@ -282,6 +327,29 @@
                 <option value="price_amount:desc">Price: High to Low</option>
             </select>
         </div>
+        <div class="blacklist">
+            <span class="blacklist-label">Mode:</span>
+            <label class="blacklist-item"><input type="radio" name="mode" value="blacklist" checked> Blacklist</label>
+            <label class="blacklist-item"><input type="radio" name="mode" value="whitelist"> Whitelist</label>
+            <button id="mode-all-btn" class="mode-all-btn">Blacklist all</button>
+            <span class="blacklist-sep"></span>
+            <span class="blacklist-label">Hide/Show:</span>
+            <label class="blacklist-item"><input type="checkbox" value="Oblečení a móda" class="blacklist-cb"> Clothes</label>
+            <label class="blacklist-item"><input type="checkbox" value="Kosmetika" class="blacklist-cb"> Cosmetics</label>
+            <label class="blacklist-item"><input type="checkbox" value="Dětské zboží" class="blacklist-cb"> Kids</label>
+            <label class="blacklist-item"><input type="checkbox" value="Dům a zahrada" class="blacklist-cb"> Home & Garden</label>
+            <label class="blacklist-item"><input type="checkbox" value="Elektro" class="blacklist-cb"> Electronics</label>
+            <label class="blacklist-item"><input type="checkbox" value="Bílé zboží" class="blacklist-cb"> Appliances</label>
+            <label class="blacklist-item"><input type="checkbox" value="Sport" class="blacklist-cb"> Sport</label>
+            <label class="blacklist-item"><input type="checkbox" value="Hobby" class="blacklist-cb"> Hobby</label>
+            <label class="blacklist-item"><input type="checkbox" value="Auto-moto" class="blacklist-cb"> Auto-moto</label>
+            <label class="blacklist-item"><input type="checkbox" value="Zdraví a péče o tělo" class="blacklist-cb"> Health & Body Care</label>
+            <label class="blacklist-item"><input type="checkbox" value="Filmy" class="blacklist-cb"> Movies</label>
+            <label class="blacklist-item"><input type="checkbox" value="Knihy" class="blacklist-cb"> Books</label>
+            <label class="blacklist-item"><input type="checkbox" value="Sběratelství" class="blacklist-cb"> Collectibles</label>
+            <label class="blacklist-item"><input type="checkbox" value="Společenské hry" class="blacklist-cb"> Board Games</label>
+            <label class="blacklist-item"><input type="checkbox" value="Nezařazeno" class="blacklist-cb"> Uncategorized</label>
+        </div>
         <div id="loading" class="loading" style="display: none;">Loading...</div>
         <div id="error" class="error" style="display: none;"></div>
         <div class="grid" id="results-grid">
@@ -330,11 +398,23 @@
             const query = lastQuery;
             const sort = document.getElementById('sort-select').value;
             const filter = document.getElementById('filter-select').value;
+            const mode = document.querySelector('input[name="mode"]:checked').value;
             let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96`;
             if (filter) url += `&f%5B%5D=${encodeURIComponent(filter)}`;
             if (sort) url += `&sort=${sort}`;
+            const param = mode === 'whitelist' ? 'f%5B%5D' : 'neg_f%5B%5D';
+            document.querySelectorAll('.blacklist-cb').forEach(cb => {
+                if (cb.checked) url += `&${param}=${encodeURIComponent('category:' + cb.value)}`;
+            });
             if (page > 1) url += `&page=${page}`;
             return url;
+        }
+
+        function updateModeButton() {
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            const cbs = document.querySelectorAll('.blacklist-cb');
+            const allChecked = cbs.length > 0 && [...cbs].every(cb => cb.checked);
+            document.getElementById('mode-all-btn').textContent = allChecked ? 'Clear all' : (mode === 'whitelist' ? 'Whitelist all' : 'Blacklist all');
         }
 
         async function fetchProducts(page) {
@@ -533,6 +613,18 @@
         footer.addEventListener('mouseenter', function() { this.classList.add('hover'); clearTimeout(this._t); this._t = setTimeout(() => this.classList.remove('hover'), 3000); });
         footer.addEventListener('mouseleave', function() { this.classList.remove('hover'); clearTimeout(this._t); });
         footer.addEventListener('click', function() { this.classList.remove('hover'); clearTimeout(this._t); });
+
+        const modeAllBtn = document.getElementById('mode-all-btn');
+        modeAllBtn.addEventListener('click', () => {
+            const cbs = document.querySelectorAll('.blacklist-cb');
+            const allChecked = [...cbs].every(cb => cb.checked);
+            cbs.forEach(cb => cb.checked = !allChecked);
+            updateModeButton();
+            fetchProducts(1);
+        });
+        document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', () => { updateModeButton(); fetchProducts(1); }));
+        document.querySelectorAll('.blacklist-cb').forEach(cb => cb.addEventListener('change', () => { updateModeButton(); fetchProducts(1); }));
+        updateModeButton();
 
         // Fetch products on page load with default query
         fetchProducts(1);
