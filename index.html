@@ -478,6 +478,19 @@
             cursor: pointer;
             accent-color: var(--green);
         }
+        .ratings-min {
+            width: 52px;
+            padding: 2px 4px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 14px;
+            text-align: center;
+        }
+        .ratings-min:disabled {
+            opacity: 0.5;
+        }
         .filters-body {
             padding: 8px;
         }
@@ -607,9 +620,11 @@
             <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false">
                 <span class="filters-arrow">&#9656;</span> Category filters <span id="filters-count" class="filters-count"></span>
             </button>
-            <label class="ratings-filter" for="ratings-filter" title="Only products with more than 10 ratings">
-                <input type="checkbox" id="ratings-filter"> 10+ ratings
-            </label>
+            <span class="ratings-filter" title="Only products with more than the given number of ratings">
+                <input type="checkbox" id="ratings-filter"> more than
+                <input type="number" id="ratings-min" class="ratings-min" min="1" step="1" value="10" disabled aria-label="Minimum number of ratings">
+                ratings
+            </span>
             <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
             <select id="sort-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
                 <option value="">Relevance</option>
@@ -653,9 +668,26 @@
         let lastQuery = '';
         let applyingHash = false;
         let ratingsFilter = false;
+        let ratingsMin = 10;
+        let ratingsApiPage = 1;
+        let ratingsCheckedTotal = 0;
+        let ratingsTotal = 0;
+        let ratingsMore = false;
+        let ratingsSearchKey = '';
+        const ratingsRawCache = new Map();
 
         const MAX_IMAGES = 8;
+        const MAX_RATINGS_PAGES = 5;
+        const PAGE_SIZE = 96;
         const imageProbeCache = new Map();
+
+        function resetRatingsState() {
+            ratingsApiPage = 1;
+            ratingsCheckedTotal = 0;
+            ratingsTotal = 0;
+            ratingsMore = false;
+            ratingsRawCache.clear();
+        }
 
         function addThumb(prefix, suffix, mainImg, strip, n) {
             const src = `${prefix}_${n}.jpg${suffix}`;
@@ -722,7 +754,7 @@
             blacklist.forEach(p => {
                 url += `&neg_f%5B%5D=${encodeURIComponent('category:' + p.split(' > ').pop())}`;
             });
-            if (page > 1 && !ratingsFilter) url += `&page=${page}`;
+            if (page > 1) url += `&page=${page}`;
             return url;
         }
 
@@ -852,13 +884,83 @@
             });
         }
 
+        async function fetchRatingsPage(targetPage) {
+            const predicate = h => {
+                const v = h.attributes && h.attributes.user_rated_total;
+                const c = v ? parseInt(Array.isArray(v) ? v[0] : v, 10) : 0;
+                return c > ratingsMin;
+            };
+            const rebuild = () => {
+                let filtered = [];
+                let checked = 0;
+                for (let p = 1; p < ratingsApiPage; p++) {
+                    const batch = ratingsRawCache.get(p);
+                    checked += batch.length;
+                    filtered.push(...batch.filter(predicate));
+                }
+                return { filtered, checked };
+            };
+
+            const needed = targetPage * PAGE_SIZE;
+            let usedThisCall = 0;
+            let fetchFailed = false;
+
+            while (usedThisCall < MAX_RATINGS_PAGES) {
+                if (rebuild().filtered.length >= needed) break;
+
+                const resp = await fetch(buildSearchUrl(ratingsApiPage));
+                if (!resp.ok) {
+                    if (ratingsApiPage === 1) throw new Error(`HTTP error! status: ${resp.status}`);
+                    fetchFailed = true;
+                    break;
+                }
+                const data = await resp.json();
+                const results = data.results || data;
+                if (ratingsApiPage === 1) ratingsTotal = results.total_hits || 0;
+                const batch = results.hits || [];
+                ratingsRawCache.set(ratingsApiPage, batch);
+                usedThisCall++;
+                ratingsApiPage++;
+
+                if (batch.length < 200) break;
+                if (ratingsTotal > 0 && rebuild().checked >= ratingsTotal) break;
+            }
+
+            const { filtered, checked } = rebuild();
+            ratingsCheckedTotal = checked;
+            const start = (targetPage - 1) * PAGE_SIZE;
+            const pageHits = filtered.slice(start, start + PAGE_SIZE);
+            const moreCached = filtered.length > start + pageHits.length;
+            const moreApi = ratingsTotal > 0 && checked < ratingsTotal && !fetchFailed;
+            ratingsMore = moreCached || moreApi;
+            return { hits: pageHits, total: ratingsTotal };
+        }
+
         async function fetchProducts(page) {
             const query = document.getElementById('search-input').value.trim();
             if (page === undefined || page === 1) {
                 lastQuery = query;
                 page = 1;
             }
-            if (ratingsFilter) page = 1;
+            if (ratingsFilter) {
+                const activeCats = Object.entries(categoryState)
+                    .filter(([, v]) => v === 'blacklist' || v === 'whitelist')
+                    .sort((a, b) => a[0].localeCompare(b[0]))
+                    .map(([k, v]) => k + '=' + v)
+                    .join(';');
+                const key = [lastQuery,
+                    document.getElementById('sort-select').value,
+                    document.getElementById('filter-select').value,
+                    ratingsMin,
+                    activeCats
+                ].join('|');
+                if (key !== ratingsSearchKey) {
+                    resetRatingsState();
+                    ratingsSearchKey = key;
+                }
+            } else {
+                ratingsSearchKey = '';
+            }
             currentPage = page;
             updateHash();
 
@@ -876,28 +978,29 @@
                     totalHits.textContent = '';
                 }
 
-                const response = await fetch(buildSearchUrl(page));
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                let hits, results;
+                if (ratingsFilter) {
+                    const fetched = await fetchRatingsPage(currentPage);
+                    hits = fetched.hits;
+                    results = { total_hits: fetched.total };
+                } else {
+                    const response = await fetch(buildSearchUrl(page));
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    results = data.results || data;
+                    hits = results.hits || [];
                 }
-
-                const data = await response.json();
-                const results = data.results || data;
-                let hits = results.hits || [];
                 currentPage = page;
                 totalHitsCount = results.total_hits || 0;
 
                 if (ratingsFilter) {
-                    hits = hits.filter(h => {
-                        const v = h.attributes && h.attributes.user_rated_total;
-                        const c = v ? parseInt(Array.isArray(v) ? v[0] : v, 10) : 0;
-                        return c > 10;
-                    });
+                    const total = results.total_hits || 0;
                     totalHitsCount = hits.length;
                     totalHits.textContent = hits.length
-                        ? `${hits.length} products with 10+ ratings${(results.total_hits || 0) > 200 ? ' (first 200 checked)' : ''}`
-                        : 'No products with 10+ ratings (first 200 checked)';
+                        ? `${hits.length} products with more than ${ratingsMin} ratings${ratingsCheckedTotal < total ? ` (first ${ratingsCheckedTotal} checked)` : ''}`
+                        : `No products with more than ${ratingsMin} ratings${ratingsCheckedTotal < total ? ` (first ${ratingsCheckedTotal} checked)` : ''}`;
                 } else {
                     totalHits.textContent = totalHitsCount ? `${totalHitsCount} products found` : '';
                 }
@@ -1016,8 +1119,22 @@
         function renderPagination() {
             const container = document.getElementById('pagination');
             container.innerHTML = '';
-            if (ratingsFilter) return;
-            const totalPages = Math.ceil(totalHitsCount / 96);
+            if (ratingsFilter) {
+                if (currentPage > 1) {
+                    const prev = document.createElement('button');
+                    prev.textContent = 'Previous Page';
+                    prev.onclick = () => { scrollToTop(); fetchProducts(currentPage - 1); };
+                    container.appendChild(prev);
+                }
+                if (ratingsMore) {
+                    const next = document.createElement('button');
+                    next.textContent = 'Next Page';
+                    next.onclick = () => { scrollToTop(); fetchProducts(currentPage + 1); };
+                    container.appendChild(next);
+                }
+                return;
+            }
+            const totalPages = Math.ceil(totalHitsCount / PAGE_SIZE);
             if (totalPages <= 1) return;
 
             if (currentPage > 1) {
@@ -1079,9 +1196,18 @@
         document.getElementById('search-btn').addEventListener('click', () => fetchProducts(1));
         document.getElementById('filter-select').addEventListener('change', () => fetchProducts(1));
         document.getElementById('sort-select').addEventListener('change', () => fetchProducts(1));
-        document.getElementById('ratings-filter').addEventListener('change', (e) => {
-            ratingsFilter = e.target.checked;
+        const ratingsEl = document.getElementById('ratings-filter');
+        const ratingsMinEl = document.getElementById('ratings-min');
+        ratingsEl.addEventListener('change', () => {
+            ratingsFilter = ratingsEl.checked;
+            ratingsMinEl.disabled = !ratingsFilter;
+            if (ratingsFilter) ratingsMin = Math.max(1, parseInt(ratingsMinEl.value, 10) || 1);
             fetchProducts(1);
+        });
+        ratingsMinEl.addEventListener('change', () => {
+            ratingsMin = Math.max(1, parseInt(ratingsMinEl.value, 10) || 1);
+            ratingsMinEl.value = ratingsMin;
+            if (ratingsFilter) fetchProducts(1);
         });
         document.getElementById('modal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
         const footer = document.getElementById('footer');
@@ -1124,12 +1250,14 @@
                 const raw = JSON.parse(params.get('c') || 'null');
                 if (raw && typeof raw === 'object' && !Array.isArray(raw)) categories = raw;
             } catch (e) { categories = {}; }
+            const r = parseInt(params.get('r') || '0', 10) || 0;
             return {
                 q: params.get('q'),
                 sort: params.get('sort') || '',
                 filter: params.get('filter') || '',
                 page: Math.max(1, parseInt(params.get('page') || '1', 10) || 1),
-                ratings: params.get('r') === '1',
+                ratings: r > 0,
+                ratingsMin: r > 0 ? r : 10,
                 categories
             };
         }
@@ -1142,7 +1270,10 @@
             document.getElementById('sort-select').value = state.sort;
             document.getElementById('filter-select').value = state.filter;
             document.getElementById('ratings-filter').checked = state.ratings;
+            document.getElementById('ratings-min').value = state.ratingsMin;
+            document.getElementById('ratings-min').disabled = !state.ratings;
             ratingsFilter = state.ratings;
+            ratingsMin = state.ratingsMin;
             Object.keys(categoryState).forEach(k => delete categoryState[k]);
             Object.assign(categoryState, state.categories);
             applyingHash = false;
@@ -1158,7 +1289,7 @@
             if (q) params.set('q', q);
             if (document.getElementById('sort-select').value) params.set('sort', document.getElementById('sort-select').value);
             if (document.getElementById('filter-select').value) params.set('filter', document.getElementById('filter-select').value);
-            if (ratingsFilter) params.set('r', '1');
+            if (ratingsFilter) params.set('r', String(ratingsMin));
             if (currentPage > 1 && !ratingsFilter) params.set('page', String(currentPage));
             const active = {};
             Object.entries(categoryState).forEach(([k, v]) => { if (v !== 'off') active[k] = v; });
