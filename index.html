@@ -558,7 +558,6 @@
             <button id="search-btn">Search</button>
         </div>
         <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
-            <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
             <select id="filter-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
                 <option value="">All Items</option>
                 <option value="availability_source:Skladem">In Stock</option>
@@ -572,14 +571,15 @@
                 <option value="labels:Novinka">Novinka</option>
                 <option value="labels:Akce">Akce</option>
             </select>
+            <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false">
+                <span class="filters-arrow">&#9656;</span> Category filters <span id="filters-count" class="filters-count"></span>
+            </button>
+            <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
             <select id="sort-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
                 <option value="">Relevance</option>
                 <option value="price_amount:asc">Price: Low to High</option>
                 <option value="price_amount:desc">Price: High to Low</option>
             </select>
-            <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false">
-                <span class="filters-arrow">&#9656;</span> Category filters <span id="filters-count" class="filters-count"></span>
-            </button>
         </div>
         <div class="filters collapsed" id="filters">
             <div id="filters-body" class="filters-body">
