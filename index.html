@@ -399,7 +399,8 @@
             const sort = document.getElementById('sort-select').value;
             const filter = document.getElementById('filter-select').value;
             const mode = document.querySelector('input[name="mode"]:checked').value;
-            let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&q=${encodeURIComponent(query)}&facets=price_amount,category,brand,labels,availability_source&size=96`;
+            let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&facets=price_amount,category,brand,labels,availability_source&size=96`;
+            if (query) url += `&q=${encodeURIComponent(query)}`;
             if (filter) url += `&f%5B%5D=${encodeURIComponent(filter)}`;
             if (sort) url += `&sort=${sort}`;
             const param = mode === 'whitelist' ? 'f%5B%5D' : 'neg_f%5B%5D';
@@ -420,7 +421,6 @@
         async function fetchProducts(page) {
             const query = document.getElementById('search-input').value.trim();
             if (page === undefined || page === 1) {
-                if (!query) return;
                 lastQuery = query;
                 page = 1;
             }
