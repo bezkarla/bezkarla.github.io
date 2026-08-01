@@ -458,6 +458,26 @@
         .filters-toggle[aria-expanded="false"] .filters-arrow {
             transform: rotate(0deg);
         }
+        .ratings-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: var(--card-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            user-select: none;
+        }
+        .ratings-filter:hover {
+            background: var(--hover-bg);
+        }
+        .ratings-filter input {
+            cursor: pointer;
+            accent-color: var(--green);
+        }
         .filters-body {
             padding: 8px;
         }
@@ -587,11 +607,15 @@
             <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false">
                 <span class="filters-arrow">&#9656;</span> Category filters <span id="filters-count" class="filters-count"></span>
             </button>
+            <label class="ratings-filter" for="ratings-filter" title="Only products with more than 10 ratings">
+                <input type="checkbox" id="ratings-filter"> 10+ ratings
+            </label>
             <div id="total-hits" class="total-hits" style="margin-bottom:0;"></div>
             <select id="sort-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;">
                 <option value="">Relevance</option>
                 <option value="price_amount:asc">Price: Low to High</option>
                 <option value="price_amount:desc">Price: High to Low</option>
+                <option value="average_rating:desc">Rating: High to Low</option>
             </select>
         </div>
         <div class="filters collapsed" id="filters">
@@ -628,6 +652,7 @@
         let totalHitsCount = 0;
         let lastQuery = '';
         let applyingHash = false;
+        let ratingsFilter = false;
 
         const MAX_IMAGES = 8;
         const imageProbeCache = new Map();
@@ -674,7 +699,8 @@
             const query = lastQuery;
             const sort = document.getElementById('sort-select').value;
             const filter = document.getElementById('filter-select').value;
-            let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&facets=price_amount,category,brand,labels,availability_source&size=96`;
+            const size = ratingsFilter ? 200 : 96;
+            let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&facets=price_amount,category,brand,labels,availability_source&size=${size}`;
             if (query) url += `&q=${encodeURIComponent(query)}`;
             if (filter) url += `&f%5B%5D=${encodeURIComponent(filter)}`;
             if (sort) url += `&sort=${sort}`;
@@ -696,7 +722,7 @@
             blacklist.forEach(p => {
                 url += `&neg_f%5B%5D=${encodeURIComponent('category:' + p.split(' > ').pop())}`;
             });
-            if (page > 1) url += `&page=${page}`;
+            if (page > 1 && !ratingsFilter) url += `&page=${page}`;
             return url;
         }
 
@@ -832,6 +858,7 @@
                 lastQuery = query;
                 page = 1;
             }
+            if (ratingsFilter) page = 1;
             currentPage = page;
             updateHash();
 
@@ -857,11 +884,24 @@
 
                 const data = await response.json();
                 const results = data.results || data;
-                const hits = results.hits || [];
+                let hits = results.hits || [];
                 currentPage = page;
                 totalHitsCount = results.total_hits || 0;
 
-                totalHits.textContent = totalHitsCount ? `${totalHitsCount} products found` : '';
+                if (ratingsFilter) {
+                    hits = hits.filter(h => {
+                        const v = h.attributes && h.attributes.user_rated_total;
+                        const c = v ? parseInt(Array.isArray(v) ? v[0] : v, 10) : 0;
+                        return c > 10;
+                    });
+                    totalHitsCount = hits.length;
+                    totalHits.textContent = hits.length
+                        ? `${hits.length} products with 10+ ratings${(results.total_hits || 0) > 200 ? ' (first 200 checked)' : ''}`
+                        : 'No products with 10+ ratings (first 200 checked)';
+                } else {
+                    totalHits.textContent = totalHitsCount ? `${totalHitsCount} products found` : '';
+                }
+
                 renderProducts(hits);
                 renderPagination();
                 mergeCategories(hits);
@@ -976,6 +1016,7 @@
         function renderPagination() {
             const container = document.getElementById('pagination');
             container.innerHTML = '';
+            if (ratingsFilter) return;
             const totalPages = Math.ceil(totalHitsCount / 96);
             if (totalPages <= 1) return;
 
@@ -1038,6 +1079,10 @@
         document.getElementById('search-btn').addEventListener('click', () => fetchProducts(1));
         document.getElementById('filter-select').addEventListener('change', () => fetchProducts(1));
         document.getElementById('sort-select').addEventListener('change', () => fetchProducts(1));
+        document.getElementById('ratings-filter').addEventListener('change', (e) => {
+            ratingsFilter = e.target.checked;
+            fetchProducts(1);
+        });
         document.getElementById('modal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
         const footer = document.getElementById('footer');
         footer.addEventListener('mouseenter', function() { this.classList.add('hover'); clearTimeout(this._t); this._t = setTimeout(() => this.classList.remove('hover'), 3000); });
@@ -1084,6 +1129,7 @@
                 sort: params.get('sort') || '',
                 filter: params.get('filter') || '',
                 page: Math.max(1, parseInt(params.get('page') || '1', 10) || 1),
+                ratings: params.get('r') === '1',
                 categories
             };
         }
@@ -1095,6 +1141,8 @@
             lastQuery = state.q !== null ? state.q.trim() : '';
             document.getElementById('sort-select').value = state.sort;
             document.getElementById('filter-select').value = state.filter;
+            document.getElementById('ratings-filter').checked = state.ratings;
+            ratingsFilter = state.ratings;
             Object.keys(categoryState).forEach(k => delete categoryState[k]);
             Object.assign(categoryState, state.categories);
             applyingHash = false;
@@ -1110,7 +1158,8 @@
             if (q) params.set('q', q);
             if (document.getElementById('sort-select').value) params.set('sort', document.getElementById('sort-select').value);
             if (document.getElementById('filter-select').value) params.set('filter', document.getElementById('filter-select').value);
-            if (currentPage > 1) params.set('page', String(currentPage));
+            if (ratingsFilter) params.set('r', '1');
+            if (currentPage > 1 && !ratingsFilter) params.set('page', String(currentPage));
             const active = {};
             Object.entries(categoryState).forEach(([k, v]) => { if (v !== 'off') active[k] = v; });
             if (Object.keys(active).length) params.set('c', JSON.stringify(active));
