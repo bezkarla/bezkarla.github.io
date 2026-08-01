@@ -420,16 +420,17 @@
             overflow: hidden;
         }
         .filters-toggle {
-            display: block;
-            width: 100%;
-            padding: 10px 14px;
-            background: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: var(--card-bg);
             color: var(--text);
-            border: none;
+            border: 1px solid var(--border);
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
-            text-align: left;
         }
         .filters-toggle:hover {
             background: var(--hover-bg);
@@ -437,18 +438,17 @@
         .filters-arrow {
             display: inline-block;
             transition: transform 0.2s;
-            margin-right: 6px;
+            margin-right: 2px;
             color: var(--link);
             transform: rotate(90deg);
         }
-        .filters.collapsed .filters-arrow {
+        .filters-toggle[aria-expanded="false"] .filters-arrow {
             transform: rotate(0deg);
         }
         .filters-body {
-            border-top: 1px solid var(--border-soft);
             padding: 8px;
         }
-        .filters.collapsed .filters-body {
+        .filters.collapsed {
             display: none;
         }
         .filters-body .blacklist {
@@ -577,11 +577,11 @@
                 <option value="price_amount:asc">Price: Low to High</option>
                 <option value="price_amount:desc">Price: High to Low</option>
             </select>
-        </div>
-        <div class="filters collapsed" id="filters">
             <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false">
                 <span class="filters-arrow">&#9656;</span> Category filters <span id="filters-count" class="filters-count"></span>
             </button>
+        </div>
+        <div class="filters collapsed" id="filters">
             <div id="filters-body" class="filters-body">
         <div class="bl-controls">
             <button id="clear-all-btn" class="mode-all-btn clear-all-btn">Clear all</button>
