@@ -120,6 +120,39 @@
             color: #666;
             margin: 8px 0;
         }
+        .cat-sep {
+            color: #aaa;
+            margin: 0 4px;
+        }
+        .cat-name {
+            color: #007BFF;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .cat-name:hover {
+            text-decoration: none;
+        }
+        .cat-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            line-height: 1;
+            padding: 0;
+            margin-left: 4px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background: #fff;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .cat-toggle:hover {
+            background: #e9ecef;
+            border-color: #999;
+        }
         .card-availability {
             font-size: 14px;
             color: #2a9d8f;
@@ -177,14 +210,12 @@
             border-radius: 8px;
             font-size: 14px;
         }
-        .blacklist-label {
-            font-weight: bold;
-            color: #333;
-        }
-        .blacklist-sep {
-            width: 1px;
-            height: 20px;
-            background: #ddd;
+        .bl-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
         }
         .mode-all-btn {
             padding: 4px 12px;
@@ -198,16 +229,166 @@
         .mode-all-btn:hover {
             background: #0056b3;
         }
-        .blacklist-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            color: #555;
-            cursor: pointer;
-            user-select: none;
+        .bl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 4px 28px;
+            align-items: stretch;
+            text-align: left;
         }
-        .blacklist-item input {
+        .bl-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 6px;
+        }
+        .bl-header {
+            font-weight: bold;
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .bl-name {
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .bl-col {
+            text-align: right;
+        }
+        #category-tree {
+            grid-template-columns: 1fr;
+        }
+        .tree-node {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 6px;
+            font-size: 14px;
+        }
+        .tree-node:hover {
+            background: #f8f9fa;
+        }
+        .tree-label {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            gap: 2px;
+        }
+        .tree-caret {
+            display: inline-block;
+            width: 16px;
             cursor: pointer;
+            color: #007BFF;
+            user-select: none;
+            flex: 0 0 16px;
+        }
+        .tree-caret.empty {
+            color: #ccc;
+            cursor: default;
+        }
+        .tree-name {
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        .ternary {
+            display: inline-flex;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .tri {
+            padding: 4px 10px;
+            border: none;
+            border-left: 1px solid #eee;
+            background: #fff;
+            color: #666;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1.2;
+        }
+        .tri:first-child {
+            border-left: none;
+        }
+        .tri:hover {
+            background: #f0f0f0;
+        }
+        .tri.active {
+            font-weight: bold;
+        }
+        .tri.tri-off.active {
+            background: #999;
+            color: #fff;
+        }
+        .tri.tri-hide.active,
+        .tri.tri-blacklist.active {
+            background: #e63946;
+            color: #fff;
+        }
+        .tri.tri-show.active,
+        .tri.tri-whitelist.active {
+            background: #2a9d8f;
+            color: #fff;
+        }
+        .clear-all-btn {
+            background: #6c757d;
+        }
+        .clear-all-btn:hover {
+            background: #545b62;
+        }
+        .filters {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+        }
+        .filters-toggle {
+            display: block;
+            width: 100%;
+            padding: 10px 14px;
+            background: transparent;
+            color: #333;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: left;
+        }
+        .filters-toggle:hover {
+            background: #f8f9fa;
+        }
+        .filters-arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+            margin-right: 6px;
+            color: #007BFF;
+            transform: rotate(90deg);
+        }
+        .filters.collapsed .filters-arrow {
+            transform: rotate(0deg);
+        }
+        .filters-body {
+            border-top: 1px solid #eee;
+            padding: 8px;
+        }
+        .filters.collapsed .filters-body {
+            display: none;
+        }
+        .filters-body .blacklist {
+            margin-bottom: 0;
+        }
+        .filters-count {
+            color: #e63946;
+            font-size: 13px;
+            margin-left: 6px;
         }
         .loading {
             text-align: center;
@@ -303,7 +484,7 @@
         <h1>BezKarla</h1>
         <p style="text-align:center;color:#999;margin-top:-10px;margin-bottom:20px;">alternative frontend for OdKarla.cz product search</p>
         <div class="search-box">
-            <input type="text" id="search-input" placeholder="Enter your search query..." value="testing">
+            <input type="text" id="search-input" placeholder="Enter your search query..." value="">
             <button id="search-btn">Search</button>
         </div>
         <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
@@ -327,28 +508,22 @@
                 <option value="price_amount:desc">Price: High to Low</option>
             </select>
         </div>
-        <div class="blacklist">
-            <span class="blacklist-label">Mode:</span>
-            <label class="blacklist-item"><input type="radio" name="mode" value="blacklist" checked> Blacklist</label>
-            <label class="blacklist-item"><input type="radio" name="mode" value="whitelist"> Whitelist</label>
-            <button id="mode-all-btn" class="mode-all-btn">Blacklist all</button>
-            <span class="blacklist-sep"></span>
-            <span class="blacklist-label">Hide/Show:</span>
-            <label class="blacklist-item"><input type="checkbox" value="Oblečení a móda" class="blacklist-cb"> Clothes</label>
-            <label class="blacklist-item"><input type="checkbox" value="Kosmetika" class="blacklist-cb"> Cosmetics</label>
-            <label class="blacklist-item"><input type="checkbox" value="Dětské zboží" class="blacklist-cb"> Kids</label>
-            <label class="blacklist-item"><input type="checkbox" value="Dům a zahrada" class="blacklist-cb"> Home & Garden</label>
-            <label class="blacklist-item"><input type="checkbox" value="Elektro" class="blacklist-cb"> Electronics</label>
-            <label class="blacklist-item"><input type="checkbox" value="Bílé zboží" class="blacklist-cb"> Appliances</label>
-            <label class="blacklist-item"><input type="checkbox" value="Sport" class="blacklist-cb"> Sport</label>
-            <label class="blacklist-item"><input type="checkbox" value="Hobby" class="blacklist-cb"> Hobby</label>
-            <label class="blacklist-item"><input type="checkbox" value="Auto-moto" class="blacklist-cb"> Auto-moto</label>
-            <label class="blacklist-item"><input type="checkbox" value="Zdraví a péče o tělo" class="blacklist-cb"> Health & Body Care</label>
-            <label class="blacklist-item"><input type="checkbox" value="Filmy" class="blacklist-cb"> Movies</label>
-            <label class="blacklist-item"><input type="checkbox" value="Knihy" class="blacklist-cb"> Books</label>
-            <label class="blacklist-item"><input type="checkbox" value="Sběratelství" class="blacklist-cb"> Collectibles</label>
-            <label class="blacklist-item"><input type="checkbox" value="Společenské hry" class="blacklist-cb"> Board Games</label>
-            <label class="blacklist-item"><input type="checkbox" value="Nezařazeno" class="blacklist-cb"> Uncategorized</label>
+        <div class="filters collapsed" id="filters">
+            <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false">
+                <span class="filters-arrow">&#9656;</span> Category filters <span id="filters-count" class="filters-count"></span>
+            </button>
+            <div id="filters-body" class="filters-body">
+        <div class="bl-controls">
+            <button id="clear-all-btn" class="mode-all-btn clear-all-btn">Clear all</button>
+        </div>
+        <div class="blacklist bl-grid">
+            <div class="bl-row bl-header">
+                <span class="bl-name">Category</span>
+                <span class="bl-col">Filter</span>
+            </div>
+            <div id="category-tree"></div>
+
+        </div>            </div>
         </div>
         <div id="loading" class="loading" style="display: none;">Loading...</div>
         <div id="error" class="error" style="display: none;"></div>
@@ -398,24 +573,156 @@
             const query = lastQuery;
             const sort = document.getElementById('sort-select').value;
             const filter = document.getElementById('filter-select').value;
-            const mode = document.querySelector('input[name="mode"]:checked').value;
             let url = `https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&facets=price_amount,category,brand,labels,availability_source&size=96`;
             if (query) url += `&q=${encodeURIComponent(query)}`;
             if (filter) url += `&f%5B%5D=${encodeURIComponent(filter)}`;
             if (sort) url += `&sort=${sort}`;
-            const param = mode === 'whitelist' ? 'f%5B%5D' : 'neg_f%5B%5D';
-            document.querySelectorAll('.blacklist-cb').forEach(cb => {
-                if (cb.checked) url += `&${param}=${encodeURIComponent('category:' + cb.value)}`;
+            const whitelist = [], blacklist = [];
+            Object.keys(categoryState).forEach(path => {
+                const state = categoryState[path];
+                if (state !== 'blacklist' && state !== 'whitelist') return;
+                const parts = path.split(' > ');
+                let covered = false;
+                for (let i = 1; i < parts.length; i++) {
+                    if (categoryState[parts.slice(0, i).join(' > ')] === state) { covered = true; break; }
+                }
+                if (covered) return;
+                (state === 'whitelist' ? whitelist : blacklist).push(path);
+            });
+            whitelist.forEach(p => {
+                url += `&f%5B%5D=${encodeURIComponent('category:' + p.split(' > ').pop())}`;
+            });
+            blacklist.forEach(p => {
+                url += `&neg_f%5B%5D=${encodeURIComponent('category:' + p.split(' > ').pop())}`;
             });
             if (page > 1) url += `&page=${page}`;
             return url;
         }
 
-        function updateModeButton() {
-            const mode = document.querySelector('input[name="mode"]:checked').value;
-            const cbs = document.querySelectorAll('.blacklist-cb');
-            const allChecked = cbs.length > 0 && [...cbs].every(cb => cb.checked);
-            document.getElementById('mode-all-btn').textContent = allChecked ? 'Clear all' : (mode === 'whitelist' ? 'Whitelist all' : 'Blacklist all');
+        const categoryTree = {};
+        const categoryState = {};
+        const expandedPaths = new Set();
+
+        function mergeCategories(hits) {
+            hits.forEach(hit => {
+                const cat = (hit.attributes && hit.attributes.category) || [];
+                if (!cat.length) return;
+                let node = categoryTree;
+                cat.forEach(name => {
+                    if (!node[name]) node[name] = { children: {} };
+                    node = node[name].children;
+                });
+            });
+        }
+
+        function subtreeHasActive(childrenObj, path) {
+            return Object.keys(childrenObj).some(name => {
+                const fullPath = path ? path + ' > ' + name : name;
+                if ((categoryState[fullPath] || 'off') !== 'off') return true;
+                return subtreeHasActive(childrenObj[name].children, fullPath);
+            });
+        }
+
+        function setCategoryState(path, state) {
+            if (state === 'off') {
+                delete categoryState[path];
+                return;
+            }
+            const parts = path.split(' > ');
+            if (state === 'whitelist') {
+                for (let i = 1; i < parts.length; i++) {
+                    const anc = parts.slice(0, i).join(' > ');
+                    if (categoryState[anc] === 'blacklist') delete categoryState[anc];
+                }
+            } else {
+                Object.keys(categoryState).forEach(p => {
+                    if (p !== path && p.startsWith(path + ' > ') && categoryState[p] === 'whitelist') {
+                        delete categoryState[p];
+                    }
+                });
+            }
+            categoryState[path] = state;
+        }
+
+        function applyCategoryFilter(path, act) {
+            setCategoryState(path, act);
+            renderCategoryTree();
+            updateFilterCount();
+            fetchProducts(1);
+        }
+
+        function renderCategoryTree() {
+            const container = document.getElementById('category-tree');
+            container.innerHTML = '';
+            const build = (obj, path, depth) => {
+                const frag = document.createDocumentFragment();
+                Object.keys(obj).sort((a, b) => a.localeCompare(b, 'cs')).forEach(name => {
+                    const fullPath = path ? path + ' > ' + name : name;
+                    const hasChildren = Object.keys(obj[name].children).length > 0;
+                    const collapsed = hasChildren && !expandedPaths.has(fullPath) && !subtreeHasActive(obj[name].children, fullPath);
+                    const state = categoryState[fullPath] || 'off';
+
+                    const row = document.createElement('div');
+                    row.className = 'tree-node';
+                    row.style.paddingLeft = (8 + depth * 20) + 'px';
+
+                    const caret = document.createElement('span');
+                    caret.className = 'tree-caret' + (hasChildren ? '' : ' empty');
+                    caret.textContent = hasChildren ? (collapsed ? '▸' : '▾') : '·';
+
+                    const nameEl = document.createElement('span');
+                    nameEl.className = 'tree-name';
+                    nameEl.textContent = name;
+
+                    const tern = document.createElement('span');
+                    tern.className = 'ternary';
+                    tern.dataset.path = fullPath;
+                    ['off', 'blacklist', 'whitelist'].forEach(st => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'tri tri-' + st + (st === state ? ' active' : '');
+                        b.dataset.state = st;
+                        b.textContent = st === 'off' ? '—' : (st === 'blacklist' ? 'Hide' : 'Show');
+                        tern.appendChild(b);
+                    });
+
+                    const label = document.createElement('span');
+                    label.className = 'tree-label';
+                    label.appendChild(caret);
+                    label.appendChild(nameEl);
+
+                    row.appendChild(label);
+                    row.appendChild(tern);
+                    frag.appendChild(row);
+                    if (hasChildren && !collapsed) frag.appendChild(build(obj[name].children, fullPath, depth + 1));
+                });
+                return frag;
+            };
+            container.appendChild(build(categoryTree, '', 0));
+            wireCategoryTree();
+        }
+
+        function wireCategoryTree() {
+            const container = document.getElementById('category-tree');
+            container.querySelectorAll('.tree-caret:not(.empty)').forEach(c => {
+                c.addEventListener('click', () => {
+                    const tern = c.closest('.tree-node').querySelector('.ternary');
+                    const path = tern.dataset.path;
+                    if (expandedPaths.has(path)) expandedPaths.delete(path);
+                    else expandedPaths.add(path);
+                    renderCategoryTree();
+                });
+            });
+            container.querySelectorAll('.ternary').forEach(tern => {
+                tern.querySelectorAll('.tri').forEach(btn => btn.addEventListener('click', () => {
+                    const path = tern.dataset.path;
+                    const current = categoryState[path] || 'off';
+                    setCategoryState(path, btn.dataset.state === current ? 'off' : btn.dataset.state);
+                    renderCategoryTree();
+                    updateFilterCount();
+                    fetchProducts(1);
+                }));
+            });
         }
 
         async function fetchProducts(page) {
@@ -454,6 +761,8 @@
                 totalHits.textContent = totalHitsCount ? `${totalHitsCount} products found` : '';
                 renderProducts(hits);
                 renderPagination();
+                mergeCategories(hits);
+                renderCategoryTree();
             } catch (err) {
                 error.textContent = `Error: ${err.message}`;
                 error.style.display = 'block';
@@ -474,6 +783,8 @@
             grid.onclick = (e) => {
                 const badge = e.target.closest('.badge');
                 if (badge) { setLabel(badge.dataset.label); return; }
+                const catBtn = e.target.closest('.cat-toggle, .cat-name');
+                if (catBtn) { applyCategoryFilter(catBtn.dataset.path, catBtn.dataset.act); return; }
                 const link = e.target.closest('.toggle-desc');
                 if (!link) return;
                 e.preventDefault();
@@ -515,6 +826,11 @@
                 const asin = attrs.asin ? attrs.asin[0] : null;
                 const productUrl = `https://www.odkarla.cz${hit.url}`;
                 const truncate = (s, len) => s.length > len ? s.slice(0, len) + '...' : s;
+                const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                const catSteps = attrs.category ? attrs.category.map((seg, i) => {
+                    const fp = attrs.category.slice(0, i + 1).join(' > ');
+                    return `<span class="cat-step"><span class="cat-name" data-path="${esc(fp)}" data-act="whitelist" title="Show only ${esc(seg)}">${esc(seg)}</span><button class="cat-toggle" type="button" data-path="${esc(fp)}" data-act="blacklist" title="Hide ${esc(seg)}">−</button></span>`;
+                }).join('<span class="cat-sep">&gt;</span>') : '';
 
                 card.innerHTML = `
                     <img class="main-img" src="${imgUrl}" alt="${title}" onerror="this.src='noimage_300x200.svg'" style="cursor:pointer">
@@ -522,7 +838,7 @@
                     <div class="card-content">
                         <div class="card-title"><a href="${productUrl}" target="_blank">${title}</a></div>
                         ${price ? `<div class="card-price">${price}${oldPrice ? ` <span class="card-old-price">${oldPrice}</span>` : ''}</div>` : ''}
-                        ${category ? `<div class="card-category">${category}</div>` : ''}
+                        ${catSteps ? `<div class="card-category">${catSteps}</div>` : ''}
                         ${availability ? `<div class="card-availability">${availability}</div>` : ''}
                             ${labels.length > 0 ? `<div>${labels.map(label => `<span class="badge" data-label="${label.replace(/"/g,'&quot;')}" style="cursor:pointer">${label}</span>`).join('')}</div>` : ''}
                             ${description ? `<div class="card-description" data-full="${description.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">${truncate(description, 300)}${description.length > 300 ? ` <a href="#" class="toggle-desc" style="color:#007BFF;font-size:13px;">show more</a>` : ''}</div>` : ''}
@@ -614,20 +930,45 @@
         footer.addEventListener('mouseleave', function() { this.classList.remove('hover'); clearTimeout(this._t); });
         footer.addEventListener('click', function() { this.classList.remove('hover'); clearTimeout(this._t); });
 
-        const modeAllBtn = document.getElementById('mode-all-btn');
-        modeAllBtn.addEventListener('click', () => {
-            const cbs = document.querySelectorAll('.blacklist-cb');
-            const allChecked = [...cbs].every(cb => cb.checked);
-            cbs.forEach(cb => cb.checked = !allChecked);
-            updateModeButton();
+        const filters = document.getElementById('filters');
+        document.getElementById('filters-toggle').addEventListener('click', () => {
+            filters.classList.toggle('collapsed');
+            document.getElementById('filters-toggle').setAttribute('aria-expanded', !filters.classList.contains('collapsed'));
+        });
+
+        function updateFilterCount() {
+            const count = Object.values(categoryState).filter(s => s !== 'off').length;
+            document.getElementById('filters-count').textContent = count ? `(${count} active)` : '';
+        }
+
+        const clearAllBtn = document.getElementById('clear-all-btn');
+        clearAllBtn.addEventListener('click', () => {
+            Object.keys(categoryState).forEach(path => delete categoryState[path]);
+            renderCategoryTree();
+            updateFilterCount();
             fetchProducts(1);
         });
-        document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', () => { updateModeButton(); fetchProducts(1); }));
-        document.querySelectorAll('.blacklist-cb').forEach(cb => cb.addEventListener('change', () => { updateModeButton(); fetchProducts(1); }));
-        updateModeButton();
+        updateFilterCount();
+
+        async function seedCategories() {
+            const base = 'https://live.luigisbox.tech/search?tracker_id=224905-260203&f%5B%5D=type:item&facets=category&size=200';
+            for (let page = 2; page <= 4; page++) {
+                try {
+                    const response = await fetch(base + '&page=' + page);
+                    if (!response.ok) break;
+                    const data = await response.json();
+                    const results = data.results || data;
+                    const hits = results.hits || [];
+                    if (!hits.length) break;
+                    mergeCategories(hits);
+                } catch (e) { break; }
+            }
+            renderCategoryTree();
+        }
 
         // Fetch products on page load with default query
         fetchProducts(1);
+        seedCategories();
     </script>
 </body>
 </html>
