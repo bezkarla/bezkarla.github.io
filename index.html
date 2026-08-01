@@ -544,6 +544,7 @@
         let currentPage = 1;
         let totalHitsCount = 0;
         let lastQuery = '';
+        let applyingHash = false;
 
         function probeImages(imgUrl, strip, mainImg) {
             const uscore = imgUrl.lastIndexOf('_');
@@ -731,6 +732,8 @@
                 lastQuery = query;
                 page = 1;
             }
+            currentPage = page;
+            updateHash();
 
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
@@ -918,6 +921,7 @@
             document.getElementById('modal').classList.remove('open');
         }
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+        window.addEventListener('popstate', applyHash);
 
         // Event listeners
         document.getElementById('search-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') fetchProducts(1); });
@@ -939,6 +943,53 @@
         function updateFilterCount() {
             const count = Object.values(categoryState).filter(s => s !== 'off').length;
             document.getElementById('filters-count').textContent = count ? `(${count} active)` : '';
+        }
+
+        function parseHash() {
+            const params = new URLSearchParams(location.hash.slice(1));
+            let categories = {};
+            try {
+                const raw = JSON.parse(params.get('c') || 'null');
+                if (raw && typeof raw === 'object' && !Array.isArray(raw)) categories = raw;
+            } catch (e) { categories = {}; }
+            return {
+                q: params.get('q'),
+                sort: params.get('sort') || '',
+                filter: params.get('filter') || '',
+                page: Math.max(1, parseInt(params.get('page') || '1', 10) || 1),
+                categories
+            };
+        }
+
+        function applyHash() {
+            const state = parseHash();
+            applyingHash = true;
+            document.getElementById('search-input').value = state.q !== null ? state.q : '';
+            lastQuery = state.q !== null ? state.q.trim() : '';
+            document.getElementById('sort-select').value = state.sort;
+            document.getElementById('filter-select').value = state.filter;
+            Object.keys(categoryState).forEach(k => delete categoryState[k]);
+            Object.assign(categoryState, state.categories);
+            applyingHash = false;
+            updateFilterCount();
+            renderCategoryTree();
+            fetchProducts(state.page);
+        }
+
+        function updateHash() {
+            if (applyingHash) return;
+            const params = new URLSearchParams();
+            const q = document.getElementById('search-input').value.trim();
+            if (q) params.set('q', q);
+            if (document.getElementById('sort-select').value) params.set('sort', document.getElementById('sort-select').value);
+            if (document.getElementById('filter-select').value) params.set('filter', document.getElementById('filter-select').value);
+            if (currentPage > 1) params.set('page', String(currentPage));
+            const active = {};
+            Object.entries(categoryState).forEach(([k, v]) => { if (v !== 'off') active[k] = v; });
+            if (Object.keys(active).length) params.set('c', JSON.stringify(active));
+            const hash = params.toString();
+            if (location.hash.slice(1) === hash) return;
+            history.pushState(null, '', '#' + hash);
         }
 
         const clearAllBtn = document.getElementById('clear-all-btn');
@@ -966,8 +1017,12 @@
             renderCategoryTree();
         }
 
-        // Fetch products on page load with default query
-        fetchProducts(1);
+        // Fetch products on page load; restore state from URL hash when present
+        if (location.hash.length > 1) {
+            applyHash();
+        } else {
+            fetchProducts(1);
+        }
         seedCategories();
     </script>
 </body>
