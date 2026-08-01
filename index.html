@@ -124,6 +124,51 @@
         h1.title-click:hover {
             color: var(--link);
         }
+        .why-toggle {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 6px;
+            text-decoration: underline dotted;
+            vertical-align: baseline;
+        }
+        .why-toggle:hover {
+            color: var(--text);
+        }
+        .why-arrow {
+            display: inline-block;
+            color: var(--link);
+            margin-right: 4px;
+            transition: transform 0.2s;
+            transform: rotate(0deg);
+        }
+        .why-toggle[aria-expanded="true"] .why-arrow {
+            transform: rotate(90deg);
+        }
+        .why-body {
+            display: none;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            padding: 14px 20px;
+            text-align: left;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted-3);
+            font-size: 14px;
+        }
+        .why-body.open {
+            display: block;
+        }
+        .why-body ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+        .why-body li {
+            margin: 5px 0;
+        }
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -648,7 +693,21 @@
 <body>
     <div class="container">
         <h1 class="title-click" id="title" data-i18n-title="resetTitle">BezKarla</h1>
-        <p style="text-align:center;color:var(--muted-2);margin-top:-10px;margin-bottom:20px;" data-i18n="subtitle">alternative frontend for OdKarla.cz product search</p>
+        <p style="text-align:center;color:var(--muted-2);margin-top:-10px;margin-bottom:20px;">
+            <span data-i18n="subtitle">alternative frontend for OdKarla.cz product search</span>
+            <button type="button" class="why-toggle" id="why-toggle" aria-expanded="false">
+                <span class="why-arrow">&#9656;</span><span data-i18n="whyToggle">why?</span>
+            </button>
+        </p>
+        <div class="why-body" id="why-body">
+                <ul>
+                    <li data-i18n="whyFeature1">Advanced category filtering — show or hide entire category branches</li>
+                    <li data-i18n="whyFeature2">One-click links to the product on Amazon and OdKarla.cz</li>
+                    <li data-i18n="whyFeature3">Filter by minimum number of ratings and star rating</li>
+                    <li data-i18n="whyFeature4">All product photos visible right in the search results</li>
+                    <li data-i18n="whyFeature5">Dark mode for comfortable browsing at night</li>
+                </ul>
+            </div>
         <div class="topbar">
             <div class="lang-toggle" id="lang-toggle" role="group" aria-label="Language">
                 <button type="button" class="lang-btn" data-lang="en">EN</button>
@@ -770,6 +829,12 @@
                 clearAll: 'Clear all',
                 reset: 'Reset',
                 resetTitle: 'Click to reset search',
+                whyToggle: 'why?',
+                whyFeature1: 'Advanced category filtering — show or hide entire category branches',
+                whyFeature2: 'One-click links to the product on Amazon and OdKarla.cz',
+                whyFeature3: 'Filter by minimum number of ratings and star rating',
+                whyFeature4: 'All product photos visible right in the search results',
+                whyFeature5: 'Dark mode for comfortable browsing at night',
                 categoryHeader: 'Category',
                 filterHeader: 'Filter',
                 loading: 'Loading...',
@@ -824,6 +889,12 @@
                 clearAll: 'Vymazat vše',
                 reset: 'Resetovat',
                 resetTitle: 'Kliknutím resetujete vyhledávání',
+                whyToggle: 'proč?',
+                whyFeature1: 'Pokročilé filtrování kategorií — zobrazit či skrýt celé větve kategorií',
+                whyFeature2: 'Odkazy jedním klikem na Amazon a OdKarla.cz',
+                whyFeature3: 'Filtrování podle minimálního počtu hodnocení a hvězdiček',
+                whyFeature4: 'Všechny fotky produktu přímo ve výsledcích vyhledávání',
+                whyFeature5: 'Tmavý režim pro příjemné prohlížení v noci',
                 categoryHeader: 'Kategorie',
                 filterHeader: 'Filtr',
                 loading: 'Načítání...',
@@ -1459,6 +1530,13 @@
         document.getElementById('filters-toggle').addEventListener('click', () => {
             filters.classList.toggle('collapsed');
             document.getElementById('filters-toggle').setAttribute('aria-expanded', !filters.classList.contains('collapsed'));
+        });
+
+        const whyToggle = document.getElementById('why-toggle');
+        whyToggle.addEventListener('click', () => {
+            const open = whyToggle.getAttribute('aria-expanded') === 'true';
+            whyToggle.setAttribute('aria-expanded', String(!open));
+            document.getElementById('why-body').classList.toggle('open', !open);
         });
 
         const themeToggle = document.getElementById('theme-toggle');
