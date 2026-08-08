@@ -293,6 +293,38 @@
             fetchProducts(1);
         }
 
+        function blacklistFromCard(path) {
+            setCategoryState(path, 'blacklist');
+            const isRemoved = (h) => {
+                const cat = (h.attributes && h.attributes.category) || [];
+                const full = cat.join(' > ');
+                return full === path || full.startsWith(path + ' > ');
+            };
+            const cards = Array.from(document.querySelectorAll('#results-grid .card'));
+            let anchorIdx = -1, anchorTop = 0;
+            for (let i = 0; i < cards.length && i < (lastHits || []).length; i++) {
+                if (!lastHits[i] || isRemoved(lastHits[i])) continue;
+                const r = cards[i].getBoundingClientRect();
+                if (r.bottom > 0) { anchorIdx = i; anchorTop = r.top; break; }
+            }
+            const filtered = [];
+            let removedBefore = 0;
+            (lastHits || []).forEach((h, i) => {
+                if (isRemoved(h)) { if (i < anchorIdx) removedBefore++; return; }
+                filtered.push(h);
+            });
+            lastHits = filtered;
+            renderProducts(filtered);
+            renderPagination();
+            renderCategoryTree();
+            updateFilterCount();
+            updateHash();
+            if (anchorIdx >= 0) {
+                const target = document.querySelectorAll('#results-grid .card')[anchorIdx - removedBefore];
+                if (target) window.scrollBy(0, target.getBoundingClientRect().top - anchorTop);
+            }
+        }
+
         function renderCategoryTree() {
             const container = document.getElementById('category-tree');
             container.innerHTML = '';
@@ -540,7 +572,11 @@
                 const badge = e.target.closest('.badge');
                 if (badge) { setLabel(badge.dataset.label); return; }
                 const catBtn = e.target.closest('.cat-toggle, .cat-name');
-                if (catBtn) { applyCategoryFilter(catBtn.dataset.path, catBtn.dataset.act); return; }
+                if (catBtn) {
+                    if (catBtn.dataset.act === 'blacklist') { blacklistFromCard(catBtn.dataset.path); return; }
+                    applyCategoryFilter(catBtn.dataset.path, catBtn.dataset.act);
+                    return;
+                }
                 const link = e.target.closest('.toggle-desc');
                 if (!link) return;
                 e.preventDefault();
